@@ -1,9 +1,13 @@
 import { ORGANS } from '../data/organs'
 import { resolveTouchPoint } from '../core/calibration'
+import { projectionBodyStyle } from '../core/projectionSetup'
 
-export default function BodyMap({ onSelect, calibration, debug = false, invisible = false, disabled = false }) {
+export default function BodyMap({ onSelect, calibration, projection, debug = false, invisible = false, disabled = false }) {
   return (
-    <div className={'body-map touch-coordinate-space' + (invisible ? ' body-map-invisible' : '') + (debug ? ' is-debug' : '')}>
+    <div
+      className={'body-map touch-coordinate-space' + (invisible ? ' body-map-invisible' : '') + (debug ? ' is-debug' : '')}
+      style={projectionBodyStyle(projection)}
+    >
       {!invisible && (
         <>
           <svg className="body-svg" viewBox="0 0 100 100" aria-hidden="true">
