@@ -22,7 +22,7 @@ import {
   downloadSystemConfig,
   parseSystemConfig,
 } from './core/systemConfig'
-import { hitTestBodyMap } from './core/touchEngine'
+import { hitTestBodyMap, hitTestScreenTarget } from './core/touchEngine'
 
 const mediaProvider = createPrototypeMediaProvider()
 
@@ -135,6 +135,18 @@ export default function App() {
   const handleSensorPoint = useCallback((x, y) => {
     if (calibrationMode || projectionMode) return
 
+    if (
+      state === 'story' &&
+      hitTestScreenTarget({
+        x,
+        y,
+        target: EXHIBIT_CONFIG.touchLayout.backTarget,
+      })
+    ) {
+      goIdle()
+      return
+    }
+
     const surface = document.querySelector('.touch-coordinate-space')
     const organ = hitTestBodyMap({
       x,
@@ -146,7 +158,7 @@ export default function App() {
     })
 
     if (organ) playOrgan(organ.id)
-  }, [calibration, calibrationMode, projectionMode, playOrgan])
+  }, [calibration, calibrationMode, projectionMode, playOrgan, state, goIdle])
 
   useEffect(() => {
     const eventName = EXHIBIT_CONFIG.sensorEventName
@@ -224,6 +236,9 @@ export default function App() {
         } else if (operatorOpen) {
           event.preventDefault()
           setOperatorOpen(false)
+        } else if (state === 'story') {
+          event.preventDefault()
+          goIdle()
         }
       }
 
@@ -244,6 +259,7 @@ export default function App() {
     exitProjection,
     goIdle,
     operatorOpen,
+    state,
   ])
 
   useEffect(() => () => clearStoryTimer(), [clearStoryTimer])
@@ -324,6 +340,28 @@ export default function App() {
             debug={debugTouch}
             invisible
           />
+
+          <button
+            type="button"
+            className="story-back-button"
+            style={{
+              '--back-x': EXHIBIT_CONFIG.touchLayout.backTarget.x + '%',
+              '--back-y': EXHIBIT_CONFIG.touchLayout.backTarget.y + '%',
+              '--back-width': EXHIBIT_CONFIG.touchLayout.backTarget.width + '%',
+              '--back-height': EXHIBIT_CONFIG.touchLayout.backTarget.height + '%',
+            }}
+            onPointerDown={(event) => {
+              event.preventDefault()
+              goIdle()
+            }}
+            aria-label="กลับหน้าหลัก"
+          >
+            <span className="story-back-icon">←</span>
+            <span className="story-back-copy">
+              <strong>กลับ</strong>
+              <small>หน้าหลัก</small>
+            </span>
+          </button>
 
           <div className="story-switch-hint">
             <span />
