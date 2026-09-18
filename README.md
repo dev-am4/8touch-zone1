@@ -94,7 +94,8 @@ npm run dev
 
 ## Operator
 
-- F8 — Touch Area / Calibration Overlay
+- F7 — Calibration Mode: ลาก Universal Reach Zone ทั้งชุด / ปรับแต่ละจุด / Export JSON
+- F8 — Touch Area Debug Overlay
 - F9 — Operator Panel
 - Ctrl + Shift + I — กลับ Idle
 - Ctrl + Shift + Q — ออกจาก Electron Kiosk
@@ -137,3 +138,20 @@ Touch Engine จะ map จาก screen coordinate เข้า Body Map coordi
 ## Deploy policy
 
 Vercel Git auto deploy ถูกปิดไว้ใน `vercel.json` เพื่อไม่ให้ทุก commit ระหว่างวางโครงสร้างสร้าง deployment ใหม่
+
+
+## Calibration Mode
+
+กด `F7` เพื่อเข้า Setup Mode
+
+ทำได้โดยไม่แก้โค้ด:
+- ลากกรอบ Universal Reach Zone เพื่อเลื่อน 8 จุดขึ้น/ลงพร้อมกัน
+- ลากแต่ละจุดแยกซ้าย/ขวา/ขึ้น/ลง
+- เลือกจุดแล้วใช้ปุ่มลูกศรสำหรับ fine adjustment ทีละ 0.5%
+- ค่าบันทึกใน `localStorage` ของเครื่องอัตโนมัติ
+- Export ค่าเป็น `zone1-calibration.json`
+- Reset กลับค่าออกแบบเริ่มต้นได้
+
+ค่า Calibration จะถูกใช้ทั้งตำแหน่งปุ่มบน UI และ Sensor hit-test จึงไม่มีกรณีภาพขยับแต่จุดตรวจ Sensor ยังอยู่ตำแหน่งเดิม
+
+ก่อนส่งมอบต้องวัดจาก Finished Floor Level และให้กลุ่มทดสอบต่างช่วงความสูง รวมถึงผู้ใช้รถเข็น ทดลองแตะครบทั้ง 8 จุด
