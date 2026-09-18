@@ -187,7 +187,6 @@ export default function PlaybackStage({
         await waitForVideoReady(incoming)
 
         if (disposed || requestId !== requestIdRef.current) {
-          incoming.pause()
           return
         }
 
@@ -202,7 +201,7 @@ export default function PlaybackStage({
         await incoming.play()
 
         if (disposed || requestId !== requestIdRef.current) {
-          incoming.pause()
+          if (incoming.dataset.key === target.key) incoming.pause()
           return
         }
 
