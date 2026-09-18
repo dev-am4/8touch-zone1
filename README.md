@@ -190,3 +190,40 @@ F8 Touch Debug / QC
         ↓
 Lock Configuration
 ```
+
+
+## Operator Setup V2
+
+กด `F9` เพื่อเปิด Setup Console ที่รวมสถานะระบบสำคัญไว้หน้าเดียว:
+
+- Projection — ตำแหน่ง X/Y และ Scale ปัจจุบัน
+- Touch — Universal Reach calibration และ 8 จุด
+- Sensor — WAITING จนกว่าจะได้รับ event `zone1:touch` แล้วเปลี่ยนเป็น EVENT RECEIVED
+- Kiosk — แยก Web Preview กับ Electron runtime
+- Media — แสดง KIOSK PHASE เพราะยังไม่โหลดวิดีโอจริงใน Web Preview
+
+### Unified configuration
+
+ปุ่ม `Export All Config` จะรวม Projection + Touch Calibration + Sensor contract + Kiosk metadata เป็นไฟล์เดียว:
+
+`zone1-system-config.json`
+
+เครื่องหน้างานสามารถกด `Import Config` เพื่อโหลด Projection และ Touch Calibration จากเครื่องทดสอบ แล้วบันทึกลง localStorage ของเครื่องนั้นทันที
+
+ดังนั้น workflow ย้ายค่าเป็น:
+
+```text
+เครื่องทดสอบ
+F6 + F7 ปรับจนผ่าน
+      ↓
+Export All Config
+      ↓
+zone1-system-config.json
+      ↓
+เครื่อง Kiosk หน้างาน
+F9 → Import Config
+      ↓
+ตรวจ F6 / F7 / F8
+      ↓
+Final QC
+```
