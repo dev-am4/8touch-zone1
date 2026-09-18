@@ -47,6 +47,7 @@ export default function App() {
     inventory: null,
     error: null,
   })
+  const [attractIndex, setAttractIndex] = useState(0)
 
   const storyTimer = useRef(null)
   const lastTouch = useRef({ id: null, at: 0 })
@@ -344,6 +345,17 @@ export default function App() {
 
   useEffect(() => () => clearStoryTimer(), [clearStoryTimer])
 
+  useEffect(() => {
+    const messages = EXHIBIT_CONFIG.visitorUi.attractMessages || []
+    if (state !== 'idle' || messages.length <= 1) return undefined
+
+    const intervalId = window.setInterval(() => {
+      setAttractIndex((index) => (index + 1) % messages.length)
+    }, EXHIBIT_CONFIG.visitorUi.attractIntervalMs || 3600)
+
+    return () => window.clearInterval(intervalId)
+  }, [state])
+
   const setupActive = calibrationMode || projectionMode
   const storyActive = state === 'story' && Boolean(activeOrgan)
   const showVisitorLabels = hasRealMedia
@@ -387,6 +399,14 @@ export default function App() {
         />
 
         <div className={'idle-ui-layer' + (!storyActive ? ' is-visible' : '')}>
+          {!setupActive && (
+            <div className="attract-message" aria-live="polite">
+              <span key={attractIndex}>
+                {EXHIBIT_CONFIG.visitorUi.attractMessages?.[attractIndex] || ''}
+              </span>
+            </div>
+          )}
+
           <BodyMap
             onSelect={playOrgan}
             calibration={calibration}
