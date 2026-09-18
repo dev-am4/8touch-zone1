@@ -7,6 +7,10 @@ export const EXHIBIT_CONFIG = {
   returnDelayMs: 900,
   playback: {
     transitionMs: 320,
+    masterFps: 30,
+    transitionHandleFrames: 12,
+    homeFrameSeconds: 0,
+    restartIdleAtHomeFrame: true,
     latestIntentWins: true,
     sameTouchCancels: true,
     storyEndReturnsIdle: true,
