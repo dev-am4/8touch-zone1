@@ -94,11 +94,12 @@ function PrototypePlayback({ organ, transitionMs }) {
         </div>
       )}
 
-      {layers.current && (
-        <div key={layers.current.id} className="playback-prototype-layer is-incoming">
-          <PrototypeScene organ={layers.current} />
-        </div>
-      )}
+      <div
+        key={layers.current?.id || 'idle'}
+        className="playback-prototype-layer is-incoming"
+      >
+        <PrototypeScene organ={layers.current} />
+      </div>
     </div>
   )
 }
