@@ -9,7 +9,7 @@ Visitor UI ต้อง **น้อยที่สุด**
 Runtime UI มีหน้าที่เพียง:
 - transparent touch areas
 - sensor hit areas
-- optional back hit area
+- exactly 8 transparent touch areas
 - debug / operator สำหรับช่าง
 
 ใน Kiosk ปกติจะไม่มี headline, instruction card, status badge หรือข้อความอธิบายซ้อนบนวิดีโอ
@@ -41,7 +41,7 @@ F7 Touch Calibration
       ↓
 F8 Touch Debug
       ↓
-ล็อกตำแหน่ง 8 Touch + Back
+ล็อกตำแหน่ง 8 Touch
       ↓
 ใช้ภาพอ้างอิงนี้เป็น Overlay Guide ใน Premiere
       ↓
@@ -74,7 +74,6 @@ Playback Engine ใช้ A/B double buffer และ crossfade ค่าเร�
 Main + แตะ A       → A
 A + แตะ B          → B
 A + แตะ A ซ้ำ      → Main
-A + แตะ Back       → Main
 A เล่นจบ           → Main
 A → B → C เร็วมาก  → ใช้ C เป็นคำสั่งล่าสุด
 ```
@@ -117,9 +116,8 @@ Web runtime ไม่ควรซ้อนกรอบ UI เพิ่มบน 
 Playback now treats `idle.mp4` frame 0 as the deterministic HOME FRAME.
 
 Whenever a Story:
-- ends,
-- is cancelled by touching the same item,
-- returns by Back,
+- ends, or
+- is cancelled by touching the same active point,
 
 the hidden idle buffer is prepared at HOME FRAME before the crossfade begins.
 
@@ -128,3 +126,14 @@ This replaces the previous idea of resuming idle from an arbitrary paused frame.
 At 30 fps, the current runtime crossfade of 320 ms is approximately 10 frames. Production uses a 12-frame transition-safe handle for margin.
 
 See `PREMIERE_TIMING_TEMPLATE.md` for the exact edit structure.
+
+
+## Exactly eight points
+
+The exhibit has exactly 8 visitor touch points.
+
+Each visual button in the edited video must correspond 1:1 with one runtime hit area. There is no ninth Back button and no duplicate anatomical hit layer.
+
+While a Story is active:
+- touching the active point again returns to Main
+- touching another of the 8 points switches directly to that Story
