@@ -7,21 +7,6 @@ export function normalizeSensorPoint(x, y) {
   return { screenX, screenY }
 }
 
-export function hitTestScreenTarget({ x, y, target }) {
-  if (!target) return false
-
-  const { screenX, screenY } = normalizeSensorPoint(x, y)
-  const localX = (screenX / window.innerWidth) * 100
-  const localY = (screenY / window.innerHeight) * 100
-
-  return (
-    localX >= target.x &&
-    localX <= target.x + target.width &&
-    localY >= target.y &&
-    localY <= target.y + target.height
-  )
-}
-
 function toLocalPoint({ x, y, surface }) {
   if (!surface) return null
 
@@ -34,7 +19,7 @@ function toLocalPoint({ x, y, surface }) {
   return { localX, localY }
 }
 
-function nearestAccessible({ localX, localY, radius, calibration }) {
+function nearestTouchPoint({ localX, localY, radius, calibration }) {
   let winner = null
   let nearest = Infinity
 
@@ -53,45 +38,19 @@ function nearestAccessible({ localX, localY, radius, calibration }) {
   return winner && nearest <= radius ? winner : null
 }
 
-function nearestAnatomical({ localX, localY, radius }) {
-  let winner = null
-  let nearest = Infinity
-
-  ORGANS.forEach((organ) => {
-    const dx = localX - organ.anchorX
-    const dy = localY - organ.anchorY
-    const distance = Math.sqrt(dx * dx + dy * dy)
-
-    if (distance < nearest) {
-      nearest = distance
-      winner = organ
-    }
-  })
-
-  return winner && nearest <= radius ? winner : null
-}
-
 export function hitTestBodyMap({
   x,
   y,
   surface,
   calibration,
   accessRadius = 11,
-  anatomicalRadius = 7,
 }) {
   const point = toLocalPoint({ x, y, surface })
   if (!point) return null
 
-  const accessible = nearestAccessible({
+  return nearestTouchPoint({
     ...point,
     radius: accessRadius,
     calibration,
-  })
-
-  if (accessible) return accessible
-
-  return nearestAnatomical({
-    ...point,
-    radius: anatomicalRadius,
   })
 }
