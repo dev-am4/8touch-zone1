@@ -19,26 +19,16 @@ export const EXHIBIT_CONFIG = {
     mode: 'video-first',
     labelsInWebPreview: true,
     labelsInKiosk: false,
-    backGraphicInWebPreview: true,
-    backGraphicInKiosk: false,
-    note: 'Final visitor visuals are baked into the videos. Runtime UI remains a transparent touch layer except in debug/operator modes.',
+    note: 'Final visitor visuals are baked into the videos. Runtime UI remains exactly eight transparent touch points except in debug/operator modes.',
   },
   touchCooldownMs: 450,
   sensorEventName: 'zone1:touch',
 
   touchLayout: {
-    mode: 'dual-zone-universal-reach',
-    backTarget: {
-      x: 4,
-      y: 84,
-      width: 18,
-      height: 11,
-      note: 'Screen-space back target in lower-left universal reach area while a story is active.',
-    },
+    mode: 'eight-fixed-points',
     accessTouchRadius: 11,
-    anatomicalTouchRadius: 7,
     accessBandY: { min: 76, max: 94 },
-    note: 'Final physical height must be calibrated on site from finished floor level so children, wheelchair users, and standing adults can all reach the access band.',
+    note: 'There are exactly eight visitor touch points. Each point controls its own story; touching the active point again returns to Main.',
   },
 
   projection: {
