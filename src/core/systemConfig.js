@@ -12,15 +12,14 @@ export function createSystemConfig({ calibration, projection }) {
     exhibit: {
       id: '8touch-zone1',
       mode: 'prototype',
-      touchModel: 'dual-zone-universal-reach',
+      touchModel: 'eight-fixed-points',
     },
     projection: sanitizeProjection(projection),
     calibration: sanitizeCalibration(calibration),
     sensor: {
       eventName: 'zone1:touch',
       acceptedCoordinates: ['normalized-0-1', 'screen-pixel'],
-      primaryInput: 'universal-reach',
-      secondaryInput: 'anatomical',
+      primaryInput: 'eight-fixed-points',
     },
     kiosk: {
       shell: 'electron',
