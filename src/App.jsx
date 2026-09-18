@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BodyMap from './components/BodyMap'
 import CalibrationOverlay from './components/CalibrationOverlay'
 import OperatorPanel from './components/OperatorPanel'
+import ProjectionSetupOverlay from './components/ProjectionSetupOverlay'
 import PrototypeScene from './components/PrototypeScene'
 import { EXHIBIT_CONFIG } from './config/exhibit'
 import { getOrgan } from './data/organs'
@@ -11,6 +12,11 @@ import {
   saveCalibration,
 } from './core/calibration'
 import { createPrototypeMediaProvider } from './core/mediaProvider'
+import {
+  loadProjectionSetup,
+  resetProjectionSetup,
+  saveProjectionSetup,
+} from './core/projectionSetup'
 import { hitTestBodyMap } from './core/touchEngine'
 
 const mediaProvider = createPrototypeMediaProvider()
@@ -21,7 +27,9 @@ export default function App() {
   const [operatorOpen, setOperatorOpen] = useState(false)
   const [debugTouch, setDebugTouch] = useState(false)
   const [calibrationMode, setCalibrationMode] = useState(false)
+  const [projectionMode, setProjectionMode] = useState(false)
   const [calibration, setCalibration] = useState(() => loadCalibration())
+  const [projection, setProjection] = useState(() => loadProjectionSetup())
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
 
   const storyTimer = useRef(null)
@@ -44,12 +52,21 @@ export default function App() {
   }, [])
 
   const resetCalibrationLayout = useCallback(() => {
-    const reset = resetCalibration()
-    setCalibration(reset)
+    setCalibration(resetCalibration())
+  }, [])
+
+  const applyProjection = useCallback((nextProjection) => {
+    const saved = saveProjectionSetup(nextProjection)
+    setProjection(saved)
+  }, [])
+
+  const resetProjectionLayout = useCallback(() => {
+    setProjection(resetProjectionSetup())
   }, [])
 
   const enterCalibration = useCallback(() => {
     goIdle()
+    setProjectionMode(false)
     setOperatorOpen(false)
     setDebugTouch(true)
     setCalibrationMode(true)
@@ -60,8 +77,20 @@ export default function App() {
     setDebugTouch(false)
   }, [])
 
+  const enterProjection = useCallback(() => {
+    goIdle()
+    setCalibrationMode(false)
+    setOperatorOpen(false)
+    setDebugTouch(false)
+    setProjectionMode(true)
+  }, [goIdle])
+
+  const exitProjection = useCallback(() => {
+    setProjectionMode(false)
+  }, [])
+
   const playOrgan = useCallback((id) => {
-    if (calibrationMode) return
+    if (calibrationMode || projectionMode) return
 
     const organ = getOrgan(id)
     if (!organ) return
@@ -78,10 +107,10 @@ export default function App() {
       setState('idle')
       setActiveId(null)
     }, EXHIBIT_CONFIG.storyDurationMs)
-  }, [calibrationMode, clearStoryTimer])
+  }, [calibrationMode, projectionMode, clearStoryTimer])
 
   const handleSensorPoint = useCallback((x, y) => {
-    if (calibrationMode) return
+    if (calibrationMode || projectionMode) return
 
     const surface = document.querySelector('.touch-coordinate-space')
     const organ = hitTestBodyMap({
@@ -94,7 +123,7 @@ export default function App() {
     })
 
     if (organ) playOrgan(organ.id)
-  }, [calibration, calibrationMode, playOrgan])
+  }, [calibration, calibrationMode, projectionMode, playOrgan])
 
   useEffect(() => {
     const eventName = EXHIBIT_CONFIG.sensorEventName
@@ -123,24 +152,33 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (event) => {
+      if (event.key === 'F6') {
+        event.preventDefault()
+        if (projectionMode) exitProjection()
+        else enterProjection()
+      }
+
       if (event.key === 'F7') {
         event.preventDefault()
         if (calibrationMode) exitCalibration()
         else enterCalibration()
       }
 
-      if (event.key === 'F8' && !calibrationMode) {
+      if (event.key === 'F8' && !calibrationMode && !projectionMode) {
         event.preventDefault()
         setDebugTouch((value) => !value)
       }
 
-      if (event.key === 'F9' && !calibrationMode) {
+      if (event.key === 'F9' && !calibrationMode && !projectionMode) {
         event.preventDefault()
         setOperatorOpen((value) => !value)
       }
 
       if (event.key === 'Escape') {
-        if (calibrationMode) {
+        if (projectionMode) {
+          event.preventDefault()
+          exitProjection()
+        } else if (calibrationMode) {
           event.preventDefault()
           exitCalibration()
         } else if (operatorOpen) {
@@ -157,16 +195,28 @@ export default function App() {
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [calibrationMode, enterCalibration, exitCalibration, goIdle, operatorOpen])
+  }, [
+    calibrationMode,
+    projectionMode,
+    enterCalibration,
+    exitCalibration,
+    enterProjection,
+    exitProjection,
+    goIdle,
+    operatorOpen,
+  ])
 
   useEffect(() => () => clearStoryTimer(), [clearStoryTimer])
+
+  const setupActive = calibrationMode || projectionMode
 
   return (
     <main
       className={
         'app-shell' +
         (debugTouch ? ' show-touch-debug' : '') +
-        (calibrationMode ? ' calibration-active' : '')
+        (calibrationMode ? ' calibration-active' : '') +
+        (projectionMode ? ' projection-active' : '')
       }
       onPointerMove={(event) => {
         if (!operatorOpen) return
@@ -188,8 +238,9 @@ export default function App() {
           <BodyMap
             onSelect={playOrgan}
             calibration={calibration}
+            projection={projection}
             debug={debugTouch}
-            disabled={calibrationMode}
+            disabled={setupActive}
           />
 
           <div className="touch-instruction">
@@ -204,9 +255,19 @@ export default function App() {
             STRUCTURE PREVIEW · NO VIDEO LOADING
           </div>
 
+          {projectionMode && (
+            <ProjectionSetupOverlay
+              projection={projection}
+              onChange={applyProjection}
+              onReset={resetProjectionLayout}
+              onClose={exitProjection}
+            />
+          )}
+
           {calibrationMode && (
             <CalibrationOverlay
               calibration={calibration}
+              projection={projection}
               onChange={applyCalibration}
               onReset={resetCalibrationLayout}
               onClose={exitCalibration}
@@ -219,6 +280,7 @@ export default function App() {
           <BodyMap
             onSelect={playOrgan}
             calibration={calibration}
+            projection={projection}
             debug={debugTouch}
             invisible
           />
@@ -235,7 +297,7 @@ export default function App() {
         className="operator-corner"
         aria-label="เปิด Operator Panel"
         onDoubleClick={() => {
-          if (!calibrationMode) setOperatorOpen(true)
+          if (!setupActive) setOperatorOpen(true)
         }}
       />
 
@@ -246,11 +308,13 @@ export default function App() {
         pointer={pointer}
         debugTouch={debugTouch}
         calibration={calibration}
+        projection={projection}
         onClose={() => setOperatorOpen(false)}
         onIdle={goIdle}
         onSelect={playOrgan}
         onToggleDebug={() => setDebugTouch((value) => !value)}
         onOpenCalibration={enterCalibration}
+        onOpenProjection={enterProjection}
       />
 
       <div className="runtime-indicator" aria-hidden="true">
