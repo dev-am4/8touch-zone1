@@ -157,10 +157,12 @@ export default function PlaybackStage({
         incoming.playsInline = true
         incoming.volume = 0
 
-        if (incoming.src !== target.src) {
+        const sourceChanged = incoming.src !== target.src
+
+        if (sourceChanged) {
           incoming.src = target.src
           incoming.load()
-        } else {
+        } else if (target.kind === 'story') {
           incoming.currentTime = 0
         }
 
@@ -171,10 +173,12 @@ export default function PlaybackStage({
           return
         }
 
-        try {
-          incoming.currentTime = 0
-        } catch {
-          // Some decoders reject a seek before metadata is fully available.
+        if (target.kind === 'story') {
+          try {
+            incoming.currentTime = 0
+          } catch {
+            // Some decoders reject a seek before metadata is fully available.
+          }
         }
 
         await incoming.play()
