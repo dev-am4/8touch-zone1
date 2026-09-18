@@ -182,3 +182,24 @@ Point 8 → muscle.mp4
 - แตะ Point 8 → muscle.mp4
 
 ไม่มี ninth interaction และไม่มี duplicate touch zone
+
+
+## Current approved idle asset
+
+The current Main / Idle visual is assigned to `idle.mp4`.
+
+Source supplied for this iteration:
+- duration: 8 seconds
+- source frame size: 1280×720
+- frame rate: 24 fps
+- H.264 video
+- AAC 48 kHz audio
+- composition contains exactly 8 visual organ buttons
+
+For the 1920×1080 exhibition master, prepare a high-quality 1080p derivative with Lanczos scaling and only mild sharpening. Upscaling improves presentation consistency but does not create detail that is absent from the 720p source.
+
+Web Preview path:
+`public/media/idle.mp4`
+
+Electron Kiosk path:
+`media/idle.mp4`
