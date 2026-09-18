@@ -26,6 +26,7 @@ import { hitTestBodyMap } from './core/touchEngine'
 
 const mediaProvider = createRuntimeMediaProvider()
 const hasRealMedia = mediaProvider.hasMedia()
+const hasPreviewIdleVideo = Boolean(EXHIBIT_CONFIG.previewMedia?.idleSrc)
 
 export default function App() {
   const [state, setState] = useState('idle')
@@ -380,7 +381,7 @@ export default function App() {
       }}
     >
       <section className="stage experience-stage">
-        {!hasRealMedia && (
+        {!hasRealMedia && !hasPreviewIdleVideo && (
           <>
             <div className="ambient-grid" />
             <div className="ambient-orb ambient-orb-a" />
@@ -394,6 +395,8 @@ export default function App() {
           transitionMs={EXHIBIT_CONFIG.playback.transitionMs}
           homeFrameSeconds={EXHIBIT_CONFIG.playback.homeFrameSeconds}
           restartIdleAtHomeFrame={EXHIBIT_CONFIG.playback.restartIdleAtHomeFrame}
+          previewIdleSrc={EXHIBIT_CONFIG.previewMedia?.idleSrc}
+          previewIdleMuted={EXHIBIT_CONFIG.previewMedia?.muted ?? true}
           onStoryEnded={handleStoryEnded}
           onPlaybackError={handlePlaybackError}
         />
