@@ -396,6 +396,8 @@ export default function App() {
           provider={mediaProvider}
           activeOrgan={storyActive ? activeOrgan : null}
           transitionMs={EXHIBIT_CONFIG.playback.transitionMs}
+          homeFrameSeconds={EXHIBIT_CONFIG.playback.homeFrameSeconds}
+          restartIdleAtHomeFrame={EXHIBIT_CONFIG.playback.restartIdleAtHomeFrame}
           onStoryEnded={handleStoryEnded}
           onPlaybackError={handlePlaybackError}
         />
