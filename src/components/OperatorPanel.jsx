@@ -24,6 +24,7 @@ export default function OperatorPanel({
   calibration,
   projection,
   sensorStatus,
+  mediaStatus,
   onClose,
   onIdle,
   onSelect,
@@ -39,6 +40,32 @@ export default function OperatorPanel({
 
   const isElectron = Boolean(window.zone1Kiosk?.isElectron)
   const sensorReceiving = sensorStatus?.status === 'receiving'
+  const mediaInventory = mediaStatus?.inventory
+  const mediaError = mediaStatus?.error
+  const mediaReady = Boolean(isElectron && mediaInventory?.present === mediaInventory?.required)
+  const mediaValue = !isElectron
+    ? 'WEB PREVIEW'
+    : mediaError
+      ? 'ERROR'
+      : mediaInventory
+        ? mediaInventory.present + '/' + mediaInventory.required
+        : 'CHECKING'
+  const mediaTone = !isElectron
+    ? 'planned'
+    : mediaError
+      ? 'waiting'
+      : mediaReady
+        ? 'ready'
+        : 'waiting'
+  const mediaDetail = !isElectron
+    ? 'Web ไม่โหลดไฟล์วิดีโอจริง'
+    : mediaError
+      ? mediaError
+      : mediaInventory
+        ? mediaInventory.missing.length
+          ? 'ขาด: ' + mediaInventory.missing.join(', ')
+          : 'Local SSD media พร้อมครบ'
+        : 'กำลังตรวจ media directory'
 
   const handleImport = async (event) => {
     const file = event.target.files?.[0]
@@ -66,7 +93,7 @@ export default function OperatorPanel({
 
       <div className="operator-stats">
         <div><small>STATE</small><strong>{state}</strong></div>
-        <div><small>MODE</small><strong>PROTOTYPE</strong></div>
+        <div><small>MODE</small><strong>{isElectron ? 'KIOSK' : 'PROTOTYPE'}</strong></div>
         <div><small>POINTER</small><strong>{pointer.x}, {pointer.y}</strong></div>
       </div>
 
@@ -101,9 +128,9 @@ export default function OperatorPanel({
         />
         <StatusCard
           label="MEDIA"
-          value="KIOSK PHASE"
-          tone="planned"
-          detail="ยังไม่โหลดวิดีโอจริงใน Web Preview"
+          value={mediaValue}
+          tone={mediaTone}
+          detail={mediaDetail}
         />
       </div>
 
@@ -168,7 +195,7 @@ export default function OperatorPanel({
       </div>
 
       <p className="operator-help">
-        หน้างาน: F6 จัด Projection → F7 จัด Universal Reach → ต่อ Sensor และดู SENSOR เป็น EVENT RECEIVED → F8 ตรวจพื้นที่แตะ → ทดสอบทุกวัย
+        หน้างาน: F6 Projection → F7 Universal Reach → ตรวจ MEDIA ให้ครบ 9/9 → ต่อ Sensor ให้ขึ้น EVENT RECEIVED → F8 Touch QC → Burn-in → ทดสอบทุกวัย
       </p>
     </aside>
   )
