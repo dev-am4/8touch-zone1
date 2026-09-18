@@ -359,6 +359,12 @@ export default function App() {
 
   const setupActive = calibrationMode || projectionMode
   const storyActive = state === 'story' && Boolean(activeOrgan)
+  const showVisitorLabels = hasRealMedia
+    ? EXHIBIT_CONFIG.visitorUi.labelsInKiosk
+    : EXHIBIT_CONFIG.visitorUi.labelsInWebPreview
+  const showBackGraphic = hasRealMedia
+    ? EXHIBIT_CONFIG.visitorUi.backGraphicInKiosk
+    : EXHIBIT_CONFIG.visitorUi.backGraphicInWebPreview
 
   return (
     <main
@@ -378,9 +384,13 @@ export default function App() {
       }}
     >
       <section className="stage experience-stage">
-        <div className="ambient-grid" />
-        <div className="ambient-orb ambient-orb-a" />
-        <div className="ambient-orb ambient-orb-b" />
+        {!hasRealMedia && (
+          <>
+            <div className="ambient-grid" />
+            <div className="ambient-orb ambient-orb-a" />
+            <div className="ambient-orb ambient-orb-b" />
+          </>
+        )}
 
         <PlaybackStage
           provider={mediaProvider}
@@ -391,31 +401,14 @@ export default function App() {
         />
 
         <div className={'idle-ui-layer' + (!storyActive ? ' is-visible' : '')}>
-          <header className="idle-copy">
-            <p className="eyebrow">SCIENCE FOR HEALTH · ZONE 1</p>
-            <h1>{EXHIBIT_CONFIG.title}</h1>
-            <p>{EXHIBIT_CONFIG.subtitle}</p>
-          </header>
-
           <BodyMap
             onSelect={playOrgan}
             calibration={calibration}
             projection={projection}
             debug={debugTouch}
+            showLabels={showVisitorLabels}
             disabled={setupActive}
           />
-
-          <div className="touch-instruction">
-            <span className="touch-icon" />
-            <div>
-              <strong>{EXHIBIT_CONFIG.idleHint}</strong>
-              <small>8 จุดสัมผัสในโซนเอื้อมถึงง่าย · เด็ก ผู้ใหญ่ และผู้ใช้รถเข็น</small>
-            </div>
-          </div>
-
-          <div className="prototype-badge">
-            {hasRealMedia ? 'LOCAL MEDIA · DOUBLE BUFFER' : 'STRUCTURE PREVIEW · NO VIDEO LOADING'}
-          </div>
         </div>
 
         {storyActive && (
@@ -426,13 +419,12 @@ export default function App() {
               projection={projection}
               activeId={activeId}
               debug={debugTouch}
-              invisible
-              storyControls
+              showLabels={showVisitorLabels}
             />
 
             <button
               type="button"
-              className="story-back-button"
+              className={'story-back-button video-back-target' + (showBackGraphic ? ' is-visible-control' : ' is-hit-only')}
               style={{
                 '--back-x': EXHIBIT_CONFIG.touchLayout.backTarget.x + '%',
                 '--back-y': EXHIBIT_CONFIG.touchLayout.backTarget.y + '%',
@@ -445,17 +437,8 @@ export default function App() {
               }}
               aria-label="กลับหน้าหลัก"
             >
-              <span className="story-back-icon">←</span>
-              <span className="story-back-copy">
-                <strong>กลับ</strong>
-                <small>หน้าหลัก</small>
-              </span>
+              {showBackGraphic && <span className="story-back-icon">←</span>}
             </button>
-
-            <div className="story-switch-hint">
-              <span />
-              แตะเรื่องอื่นเพื่อเปลี่ยนทันที · แตะเรื่องเดิมซ้ำเพื่อกลับหน้าหลัก
-            </div>
           </div>
         )}
 
