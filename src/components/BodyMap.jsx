@@ -2,10 +2,24 @@ import { ORGANS } from '../data/organs'
 import { resolveTouchPoint } from '../core/calibration'
 import { projectionBodyStyle } from '../core/projectionSetup'
 
-export default function BodyMap({ onSelect, calibration, projection, debug = false, invisible = false, disabled = false }) {
+export default function BodyMap({
+  onSelect,
+  calibration,
+  projection,
+  activeId = null,
+  debug = false,
+  invisible = false,
+  storyControls = false,
+  disabled = false,
+}) {
   return (
     <div
-      className={'body-map touch-coordinate-space' + (invisible ? ' body-map-invisible' : '') + (debug ? ' is-debug' : '')}
+      className={
+        'body-map touch-coordinate-space' +
+        (invisible ? ' body-map-invisible' : '') +
+        (storyControls ? ' body-map-story-controls' : '') +
+        (debug ? ' is-debug' : '')
+      }
       style={projectionBodyStyle(projection)}
     >
       {!invisible && (
@@ -70,26 +84,38 @@ export default function BodyMap({ onSelect, calibration, projection, debug = fal
 
       {ORGANS.map((organ, index) => {
         const point = resolveTouchPoint(organ, calibration)
+        const isActive = organ.id === activeId
+        const showLabel = !invisible || storyControls
+
         return (
           <button
             type="button"
             key={'access-' + organ.id}
             disabled={disabled}
-            className={(invisible ? 'sensor-hotspot sensor-access' : 'hotspot access-target') + ' hotspot-' + index}
+            className={
+              (invisible ? 'sensor-hotspot sensor-access' : 'hotspot access-target') +
+              (storyControls ? ' story-access-target' : '') +
+              (isActive ? ' is-current-story' : '') +
+              ' hotspot-' + index
+            }
             style={{ '--x': point.x + '%', '--y': point.y + '%', '--hue': organ.hue }}
             onPointerDown={(event) => {
               event.preventDefault()
               if (!disabled) onSelect(organ.id)
             }}
-            aria-label={'แตะเพื่อดู ' + organ.name}
+            aria-label={
+              isActive
+                ? 'แตะซ้ำเพื่อกลับหน้าหลักจาก ' + organ.name
+                : 'แตะเพื่อดู ' + organ.name
+            }
           >
-            {!invisible && (
+            {showLabel && (
               <>
-                <span className="hotspot-ring" />
-                <span className="hotspot-core" />
+                {!storyControls && <span className="hotspot-ring" />}
+                {!storyControls && <span className="hotspot-core" />}
                 <span className="hotspot-label">
                   <strong>{organ.name}</strong>
-                  <small>{organ.en}</small>
+                  <small>{isActive && storyControls ? 'แตะซ้ำเพื่อกลับ' : organ.en}</small>
                 </span>
               </>
             )}
