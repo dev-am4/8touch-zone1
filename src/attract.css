@@ -12,14 +12,21 @@
 .attract-message span {
   display: inline-block;
   color: rgba(239, 252, 255, .92);
-  font-family: var(--font-netflix);
-  font-size: clamp(1.55rem, 2.15vw, 2.55rem);
+  font-family: "Kanit", var(--font-netflix);
+  font-size: clamp(1.5rem, 2.05vw, 2.5rem);
   font-weight: 700;
-  line-height: 1.16;
+  line-height: 1.28;
   letter-spacing: -.012em;
   white-space: normal;
-  text-wrap: balance;
+  text-wrap: pretty;
   max-width: 100%;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
   text-shadow: 0 2px 18px rgba(0,0,0,.58), 0 0 20px rgba(74,218,255,.12);
   animation: attract-message-enter 720ms cubic-bezier(.22,.78,.22,1) both;
 }
