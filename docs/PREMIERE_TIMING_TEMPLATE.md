@@ -18,7 +18,7 @@ Do not change scale, crop, camera framing, or button coordinates between files.
 
 `idle.mp4` frame 0 is the **HOME FRAME**.
 
-The playback engine now returns `idle.mp4` to this frame every time a Story ends, is cancelled, or Back is touched.
+The playback engine now returns `idle.mp4` to this frame every time a Story ends or the active point is touched again.
 
 HOME FRAME should contain the stable hub composition:
 - same body / subject framing
@@ -171,3 +171,14 @@ muscle.mp4
 ```
 
 All files must use the same export preset.
+
+
+## Eight visual buttons = eight touch points
+
+Premiere guide must contain exactly 8 visual buttons.
+
+Each button corresponds to one transparent runtime hit area. Do not add a separate Back button.
+
+When a Story is active, the same 8 visual buttons remain the navigation:
+- touch the same active button again → Main
+- touch another button → switch directly to that Story
