@@ -79,7 +79,7 @@ STORY A
         → crossfade A → IDLE
 ```
 
-Transition เริ่มต้น `420 ms` และสามารถปรับใน `EXHIBIT_CONFIG.playback.transitionMs`
+Transition เริ่มต้น `320 ms` และสามารถปรับใน `EXHIBIT_CONFIG.playback.transitionMs`
 
 ## Double-buffer playback
 
@@ -113,14 +113,17 @@ Buffer B = hidden / loading next clip
 
 ## Story controls
 
-ขณะวิดีโอย่อยเล่น:
+Visitor mode ใช้ **video-first UI**:
 
-- Universal Reach 8 จุดยังคงอยู่แบบ opacity ต่ำ
-- เรื่องที่กำลังเล่น highlight ชัดขึ้น
+- ปุ่มและ visual feedback ที่ผู้ชมเห็นถูกตัดต่ออยู่ในวิดีโอ
+- Runtime Universal Reach เป็น transparent hit area
 - แตะเรื่องอื่น = เปลี่ยนทันที
 - แตะเรื่องเดิม = กลับหน้าหลัก
-- มีปุ่ม BACK แยกสำหรับทุกวัย
-- F8 แสดง Touch Area สำหรับ QC
+- Back เป็น hit area และสามารถใส่ visual ไว้ในวิดีโอได้
+- F8 เท่านั้นที่แสดง Touch Area สำหรับ QC
+- Web Preview แสดงชื่อจุดแตะแบบจางเพื่อเช็ก alignment
+
+Final video ต้องตัดตามตำแหน่งที่ล็อกแล้วใน F6/F7/F8 ดู `VIDEO_ALIGNMENT_SPEC.md`
 
 ## Media inventory
 
