@@ -227,3 +227,21 @@ F9 → Import Config
       ↓
 Final QC
 ```
+
+
+## Story Back Touch
+
+เมื่ออยู่ในหน้า Story มีปุ่ม `กลับ / หน้าหลัก` ขนาดใหญ่ในโซนล่างซ้ายสำหรับผู้ชมทุกวัย
+
+รองรับทั้ง:
+- แตะปุ่มบนจอโดยตรง
+- Mouse / Windows Touch
+- External Sensor ที่ส่ง `zone1:touch`
+
+Sensor จะตรวจพื้นที่ Back ก่อนตรวจจุดอวัยวะ ถ้าแตะ Back จะ:
+1. หยุด Story timer
+2. กลับ state `IDLE`
+3. ล้าง active organ
+4. พร้อมให้ผู้ชมคนถัดไปเลือกใหม่ทันที
+
+กด `F8` จะเห็นกรอบ `BACK TOUCH AREA` สำหรับตรวจตำแหน่งหน้างาน
