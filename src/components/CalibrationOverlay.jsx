@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { ORGANS } from '../data/organs'
 import { createCalibrationExport, resolveTouchPoint } from '../core/calibration'
+import { projectionBodyStyle } from '../core/projectionSetup'
 
 function downloadJson(data, filename) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -21,7 +22,7 @@ function pointFromPointer(event, rect) {
   }
 }
 
-export default function CalibrationOverlay({ calibration, onChange, onReset, onClose }) {
+export default function CalibrationOverlay({ calibration, projection, onChange, onReset, onClose }) {
   const surfaceRef = useRef(null)
   const dragRef = useRef(null)
   const [selectedId, setSelectedId] = useState(null)
@@ -123,6 +124,7 @@ export default function CalibrationOverlay({ calibration, onChange, onReset, onC
       <div
         ref={surfaceRef}
         className="body-map calibration-surface"
+        style={projectionBodyStyle(projection)}
         onPointerMove={handleMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
