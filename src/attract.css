@@ -1,0 +1,40 @@
+.attract-message {
+  position: absolute;
+  top: clamp(28px, 4.2vh, 54px);
+  left: 50%;
+  z-index: 18;
+  width: min(82vw, 1100px);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.attract-message span {
+  display: inline-block;
+  color: rgba(239, 252, 255, .92);
+  font-size: clamp(1rem, 1.45vw, 1.65rem);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: .01em;
+  text-shadow: 0 2px 18px rgba(0,0,0,.58), 0 0 20px rgba(74,218,255,.12);
+  animation: attract-message-enter 720ms cubic-bezier(.22,.78,.22,1) both;
+}
+
+@keyframes attract-message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.story-active .attract-message,
+.calibration-active .attract-message,
+.projection-active .attract-message {
+  display: none;
+}
