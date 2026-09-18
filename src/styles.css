@@ -1584,3 +1584,94 @@ button {
     width: min(470px, 50vw);
   }
 }
+
+
+/* Story back touch target */
+
+.story-back-button {
+  position: absolute;
+  left: var(--back-x);
+  top: var(--back-y);
+  width: var(--back-width);
+  height: var(--back-height);
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .7rem;
+  min-width: 132px;
+  min-height: 66px;
+  padding: .6rem 1rem;
+  border: 1px solid rgba(133, 229, 249, .28);
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(75, 208, 235, .1), rgba(3, 13, 19, .76));
+  color: rgba(238, 253, 255, .96);
+  box-shadow:
+    inset 0 0 20px rgba(90, 219, 244, .04),
+    0 10px 30px rgba(0,0,0,.2);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.story-back-button:active {
+  transform: scale(.97);
+  border-color: rgba(133, 229, 249, .65);
+  background:
+    linear-gradient(135deg, rgba(75, 208, 235, .18), rgba(3, 13, 19, .84));
+}
+
+.story-back-icon {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1px solid rgba(126, 232, 251, .34);
+  color: #8feaff;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.story-back-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .05rem;
+}
+
+.story-back-copy strong {
+  font-size: clamp(.82rem, 1vw, 1.12rem);
+}
+
+.story-back-copy small {
+  color: rgba(213, 246, 251, .48);
+  font-size: clamp(.55rem, .62vw, .72rem);
+}
+
+.show-touch-debug .story-back-button {
+  border: 2px dashed rgba(255, 205, 110, .9);
+  background: rgba(255, 185, 70, .12);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.04),
+    0 0 28px rgba(255, 188, 70, .22);
+}
+
+.show-touch-debug .story-back-button::after {
+  content: "BACK TOUCH AREA";
+  position: absolute;
+  left: .6rem;
+  bottom: calc(100% + .35rem);
+  color: rgba(255, 219, 156, .86);
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+  .story-back-button {
+    min-height: 74px;
+  }
+}
