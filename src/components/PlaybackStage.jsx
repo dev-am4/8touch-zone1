@@ -53,37 +53,50 @@ function fadeVolumes({ incoming, outgoing, durationMs, onDone }) {
 }
 
 function PrototypePlayback({ organ, transitionMs }) {
-  const [current, setCurrent] = useState(organ)
-  const [previous, setPrevious] = useState(null)
+  const currentRef = useRef(organ)
   const timerRef = useRef(null)
+  const [layers, setLayers] = useState({
+    current: organ,
+    previous: null,
+  })
 
   useEffect(() => {
-    window.clearTimeout(timerRef.current)
+    const existing = currentRef.current
+    if (existing?.id === organ?.id) return
 
-    setCurrent((existing) => {
-      if (existing?.id === organ?.id) return existing
-      setPrevious(existing)
-      return organ
+    window.clearTimeout(timerRef.current)
+    currentRef.current = organ
+
+    setLayers({
+      current: organ,
+      previous: existing,
     })
 
     timerRef.current = window.setTimeout(() => {
-      setPrevious(null)
+      setLayers((value) => ({
+        ...value,
+        previous: null,
+      }))
     }, transitionMs + 80)
 
     return () => window.clearTimeout(timerRef.current)
   }, [organ, transitionMs])
 
   return (
-    <div className="playback-prototype-surface" aria-hidden={!organ}>
-      {previous && (
+    <div
+      className="playback-prototype-surface"
+      aria-hidden={!organ}
+      style={{ '--playback-transition': transitionMs + 'ms' }}
+    >
+      {layers.previous && (
         <div className="playback-prototype-layer is-outgoing">
-          <PrototypeScene organ={previous} />
+          <PrototypeScene organ={layers.previous} />
         </div>
       )}
 
-      {current && (
-        <div key={current.id} className="playback-prototype-layer is-incoming">
-          <PrototypeScene organ={current} />
+      {layers.current && (
+        <div key={layers.current.id} className="playback-prototype-layer is-incoming">
+          <PrototypeScene organ={layers.current} />
         </div>
       )}
     </div>
@@ -249,7 +262,10 @@ export default function PlaybackStage({
   }
 
   return (
-    <div className="playback-video-surface">
+    <div
+      className="playback-video-surface"
+      style={{ '--playback-transition': transitionMs + 'ms' }}
+    >
       {[0, 1].map((index) => (
         <video
           key={index}
