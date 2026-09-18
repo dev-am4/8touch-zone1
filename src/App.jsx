@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BodyMap from './components/BodyMap'
 import CalibrationOverlay from './components/CalibrationOverlay'
 import OperatorPanel from './components/OperatorPanel'
+import PlaybackStage from './components/PlaybackStage'
 import ProjectionSetupOverlay from './components/ProjectionSetupOverlay'
-import PrototypeScene from './components/PrototypeScene'
 import { EXHIBIT_CONFIG } from './config/exhibit'
 import { getOrgan } from './data/organs'
 import {
@@ -11,7 +11,7 @@ import {
   resetCalibration,
   saveCalibration,
 } from './core/calibration'
-import { createPrototypeMediaProvider } from './core/mediaProvider'
+import { createRuntimeMediaProvider } from './core/mediaProvider'
 import {
   loadProjectionSetup,
   resetProjectionSetup,
@@ -24,7 +24,8 @@ import {
 } from './core/systemConfig'
 import { hitTestBodyMap, hitTestScreenTarget } from './core/touchEngine'
 
-const mediaProvider = createPrototypeMediaProvider()
+const mediaProvider = createRuntimeMediaProvider()
+const hasRealMedia = mediaProvider.hasMedia()
 
 export default function App() {
   const [state, setState] = useState('idle')
@@ -40,6 +41,11 @@ export default function App() {
     status: 'waiting',
     lastPoint: { x: '—', y: '—' },
     lastSeen: null,
+  })
+  const [mediaStatus, setMediaStatus] = useState({
+    mode: mediaProvider.mode,
+    inventory: null,
+    error: null,
   })
 
   const storyTimer = useRef(null)
@@ -119,18 +125,63 @@ export default function App() {
     if (!organ) return
 
     const now = Date.now()
-    if (lastTouch.current.id === id && now - lastTouch.current.at < EXHIBIT_CONFIG.touchCooldownMs) return
+    if (
+      lastTouch.current.id === id &&
+      now - lastTouch.current.at < EXHIBIT_CONFIG.touchCooldownMs
+    ) {
+      return
+    }
+
     lastTouch.current = { id, at: now }
+
+    if (
+      EXHIBIT_CONFIG.playback.sameTouchCancels &&
+      state === 'story' &&
+      activeId === id
+    ) {
+      goIdle()
+      return
+    }
 
     clearStoryTimer()
     setActiveId(id)
     setState('story')
 
-    storyTimer.current = window.setTimeout(() => {
-      setState('idle')
-      setActiveId(null)
-    }, EXHIBIT_CONFIG.storyDurationMs)
-  }, [calibrationMode, projectionMode, clearStoryTimer])
+    if (!hasRealMedia) {
+      storyTimer.current = window.setTimeout(() => {
+        setState('idle')
+        setActiveId(null)
+      }, EXHIBIT_CONFIG.storyDurationMs)
+    }
+  }, [
+    activeId,
+    calibrationMode,
+    clearStoryTimer,
+    goIdle,
+    projectionMode,
+    state,
+  ])
+
+  const handleStoryEnded = useCallback((organId) => {
+    if (
+      EXHIBIT_CONFIG.playback.storyEndReturnsIdle &&
+      state === 'story' &&
+      activeId === organId
+    ) {
+      goIdle()
+    }
+  }, [activeId, goIdle, state])
+
+  const handlePlaybackError = useCallback((error) => {
+    setMediaStatus((current) => ({
+      ...current,
+      error: error?.message || 'Media playback error',
+    }))
+
+    if (error?.target?.kind === 'story') {
+      goIdle()
+    }
+  }, [goIdle])
 
   const handleSensorPoint = useCallback((x, y) => {
     if (calibrationMode || projectionMode) return
@@ -158,7 +209,14 @@ export default function App() {
     })
 
     if (organ) playOrgan(organ.id)
-  }, [calibration, calibrationMode, projectionMode, playOrgan, state, goIdle])
+  }, [
+    calibration,
+    calibrationMode,
+    goIdle,
+    playOrgan,
+    projectionMode,
+    state,
+  ])
 
   useEffect(() => {
     const eventName = EXHIBIT_CONFIG.sensorEventName
@@ -203,6 +261,37 @@ export default function App() {
   }, [handleSensorPoint])
 
   useEffect(() => {
+    let disposed = false
+
+    const readInventory = async () => {
+      if (!window.zone1Kiosk?.getMediaStatus) return
+
+      try {
+        const inventory = await window.zone1Kiosk.getMediaStatus()
+        if (!disposed) {
+          setMediaStatus({
+            mode: mediaProvider.mode,
+            inventory,
+            error: null,
+          })
+        }
+      } catch (error) {
+        if (!disposed) {
+          setMediaStatus((current) => ({
+            ...current,
+            error: error?.message || 'Cannot read media inventory',
+          }))
+        }
+      }
+    }
+
+    readInventory()
+    return () => {
+      disposed = true
+    }
+  }, [])
+
+  useEffect(() => {
     const onKey = (event) => {
       if (event.key === 'F6') {
         event.preventDefault()
@@ -242,7 +331,11 @@ export default function App() {
         }
       }
 
-      if ((event.key === 'Home' || event.key.toLowerCase() === 'i') && event.ctrlKey && event.shiftKey) {
+      if (
+        (event.key === 'Home' || event.key.toLowerCase() === 'i') &&
+        event.ctrlKey &&
+        event.shiftKey
+      ) {
         event.preventDefault()
         goIdle()
       }
@@ -265,6 +358,7 @@ export default function App() {
   useEffect(() => () => clearStoryTimer(), [clearStoryTimer])
 
   const setupActive = calibrationMode || projectionMode
+  const storyActive = state === 'story' && Boolean(activeOrgan)
 
   return (
     <main
@@ -272,19 +366,31 @@ export default function App() {
         'app-shell' +
         (debugTouch ? ' show-touch-debug' : '') +
         (calibrationMode ? ' calibration-active' : '') +
-        (projectionMode ? ' projection-active' : '')
+        (projectionMode ? ' projection-active' : '') +
+        (storyActive ? ' story-active' : ' idle-active')
       }
       onPointerMove={(event) => {
         if (!operatorOpen) return
-        setPointer({ x: Math.round(event.clientX), y: Math.round(event.clientY) })
+        setPointer({
+          x: Math.round(event.clientX),
+          y: Math.round(event.clientY),
+        })
       }}
     >
-      {state === 'idle' || !activeOrgan ? (
-        <section className="stage idle-stage">
-          <div className="ambient-grid" />
-          <div className="ambient-orb ambient-orb-a" />
-          <div className="ambient-orb ambient-orb-b" />
+      <section className="stage experience-stage">
+        <div className="ambient-grid" />
+        <div className="ambient-orb ambient-orb-a" />
+        <div className="ambient-orb ambient-orb-b" />
 
+        <PlaybackStage
+          provider={mediaProvider}
+          activeOrgan={storyActive ? activeOrgan : null}
+          transitionMs={EXHIBIT_CONFIG.playback.transitionMs}
+          onStoryEnded={handleStoryEnded}
+          onPlaybackError={handlePlaybackError}
+        />
+
+        <div className={'idle-ui-layer' + (!storyActive ? ' is-visible' : '')}>
           <header className="idle-copy">
             <p className="eyebrow">SCIENCE FOR HEALTH · ZONE 1</p>
             <h1>{EXHIBIT_CONFIG.title}</h1>
@@ -308,67 +414,70 @@ export default function App() {
           </div>
 
           <div className="prototype-badge">
-            STRUCTURE PREVIEW · NO VIDEO LOADING
+            {hasRealMedia ? 'LOCAL MEDIA · DOUBLE BUFFER' : 'STRUCTURE PREVIEW · NO VIDEO LOADING'}
           </div>
+        </div>
 
-          {projectionMode && (
-            <ProjectionSetupOverlay
-              projection={projection}
-              onChange={applyProjection}
-              onReset={resetProjectionLayout}
-              onClose={exitProjection}
-            />
-          )}
-
-          {calibrationMode && (
-            <CalibrationOverlay
+        {storyActive && (
+          <div className="story-ui-layer is-visible">
+            <BodyMap
+              onSelect={playOrgan}
               calibration={calibration}
               projection={projection}
-              onChange={applyCalibration}
-              onReset={resetCalibrationLayout}
-              onClose={exitCalibration}
+              activeId={activeId}
+              debug={debugTouch}
+              invisible
+              storyControls
             />
-          )}
-        </section>
-      ) : (
-        <section className="stage story-stage">
-          <PrototypeScene organ={activeOrgan} />
-          <BodyMap
-            onSelect={playOrgan}
+
+            <button
+              type="button"
+              className="story-back-button"
+              style={{
+                '--back-x': EXHIBIT_CONFIG.touchLayout.backTarget.x + '%',
+                '--back-y': EXHIBIT_CONFIG.touchLayout.backTarget.y + '%',
+                '--back-width': EXHIBIT_CONFIG.touchLayout.backTarget.width + '%',
+                '--back-height': EXHIBIT_CONFIG.touchLayout.backTarget.height + '%',
+              }}
+              onPointerDown={(event) => {
+                event.preventDefault()
+                goIdle()
+              }}
+              aria-label="กลับหน้าหลัก"
+            >
+              <span className="story-back-icon">←</span>
+              <span className="story-back-copy">
+                <strong>กลับ</strong>
+                <small>หน้าหลัก</small>
+              </span>
+            </button>
+
+            <div className="story-switch-hint">
+              <span />
+              แตะเรื่องอื่นเพื่อเปลี่ยนทันที · แตะเรื่องเดิมซ้ำเพื่อกลับหน้าหลัก
+            </div>
+          </div>
+        )}
+
+        {projectionMode && (
+          <ProjectionSetupOverlay
+            projection={projection}
+            onChange={applyProjection}
+            onReset={resetProjectionLayout}
+            onClose={exitProjection}
+          />
+        )}
+
+        {calibrationMode && (
+          <CalibrationOverlay
             calibration={calibration}
             projection={projection}
-            debug={debugTouch}
-            invisible
+            onChange={applyCalibration}
+            onReset={resetCalibrationLayout}
+            onClose={exitCalibration}
           />
-
-          <button
-            type="button"
-            className="story-back-button"
-            style={{
-              '--back-x': EXHIBIT_CONFIG.touchLayout.backTarget.x + '%',
-              '--back-y': EXHIBIT_CONFIG.touchLayout.backTarget.y + '%',
-              '--back-width': EXHIBIT_CONFIG.touchLayout.backTarget.width + '%',
-              '--back-height': EXHIBIT_CONFIG.touchLayout.backTarget.height + '%',
-            }}
-            onPointerDown={(event) => {
-              event.preventDefault()
-              goIdle()
-            }}
-            aria-label="กลับหน้าหลัก"
-          >
-            <span className="story-back-icon">←</span>
-            <span className="story-back-copy">
-              <strong>กลับ</strong>
-              <small>หน้าหลัก</small>
-            </span>
-          </button>
-
-          <div className="story-switch-hint">
-            <span />
-            แตะอวัยวะอื่นเพื่อเปลี่ยนเรื่องได้ทันที
-          </div>
-        </section>
-      )}
+        )}
+      </section>
 
       <button
         type="button"
@@ -388,6 +497,7 @@ export default function App() {
         calibration={calibration}
         projection={projection}
         sensorStatus={sensorStatus}
+        mediaStatus={mediaStatus}
         onClose={() => setOperatorOpen(false)}
         onIdle={goIdle}
         onSelect={playOrgan}

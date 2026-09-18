@@ -1,29 +1,35 @@
-# Kiosk Media Plan — Future Phase
+# Kiosk Media Plan — Media Playback Engine V1
 
-เอกสารนี้เป็น contract สำหรับระยะ Kiosk เท่านั้น ยังไม่มีการใส่วิดีโอจริงใน repository ตอนนี้
+ระบบ Playback ถูกวางโครงแล้ว แต่ repository ยังไม่มีไฟล์วิดีโอจริง
 
-## หลักการ
+## Runtime แยก 2 แบบ
 
-Web Preview และ Kiosk ใช้ State Machine / Touch Engine ชุดเดียวกัน
+### Web / Vercel Preview
 
-ต่างกันเฉพาะ Media Provider:
+ใช้ `createPrototypeMediaProvider()`
 
-```text
-Preview
-createPrototypeMediaProvider()
-→ ไม่โหลดวิดีโอ
+- ไม่ request MP4 จริง
+- ใช้ Prototype Scene เพื่อทดสอบ Flow
+- Story มี prototype timeout
+- ใช้ทดสอบ Touch / Projection / Calibration / Operator ได้
 
-Kiosk
-createKioskMediaProvider()
-→ resolve ไฟล์จาก Local SSD
-```
+### Electron Kiosk
 
-## โครงสร้างที่ตั้งใจใช้บนเครื่อง Kiosk
+ใช้ `createRuntimeMediaProvider()` แล้วเลือก Local Video Provider อัตโนมัติ
+
+- เล่นไฟล์จาก Local SSD
+- ไม่ต้องใช้อินเทอร์เน็ต
+- ไม่มี story timeout แบบเดาเวลา
+- จบคลิปด้วย event `ended` จริง
+- เปลี่ยนคลิปด้วย double-buffer A/B
+
+## Media directory
+
+วางโฟลเดอร์ `media` ไว้ข้างไฟล์ EXE:
 
 ```text
 Zone1-8Touch/
 ├── Zone1-8Touch.exe
-├── resources/
 └── media/
     ├── idle.mp4
     ├── brain.mp4
@@ -36,26 +42,119 @@ Zone1-8Touch/
     └── muscle.mp4
 ```
 
-ไฟล์ media ไม่จำเป็นต้องอยู่ใน GitHub และไม่ต้อง deploy ไป Vercel
+หรือกำหนด path เองด้วย environment variable:
 
-## ตอนเริ่ม Kiosk phase ต้องทำ
+`ZONE1_MEDIA_DIR=D:\\Zone1Media`
 
-1. เลือกวิธี resolve local file ใน Electron
-2. ทำ LocalVideoScene
-3. preload / warm-up decoder
-4. audio output test
-5. transition idle → clip → idle
-6. missing-file fallback
-7. watchdog / crash recovery
-8. startup / auto-login / auto-run
-9. burn-in test หลายชั่วโมง
-10. final calibration หน้างาน
+Electron ให้ renderer อ่านวิดีโอผ่าน custom protocol `zone1-media://` เท่านั้น และ whitelist เฉพาะ 9 filename ข้างต้น
 
-## เหตุผลที่แยก media ออกจาก Web
+## Interaction contract
 
-- ลดขนาด repository
-- Vercel ไม่ต้องรับไฟล์หนัก
-- เปลี่ยนวิดีโอหน้างานได้โดยไม่ rebuild UI
-- media backup/restore ง่าย
-- ลดความเสี่ยง path หรือ CDN มีปัญหา
-- Kiosk เล่นจาก SSD โดยตรง
+```text
+IDLE VIDEO
+   │
+   ├─ แตะ A
+   │    → preload A ใน buffer ที่ซ่อน
+   │    → wait decoded first frame
+   │    → play A
+   │    → crossfade IDLE → A
+   │
+   └─ รอผู้ชม
+
+STORY A
+   │
+   ├─ แตะ A ซ้ำ
+   │    → ยกเลิก
+   │    → crossfade A → IDLE
+   │
+   ├─ แตะ B
+   │    → latest intent wins
+   │    → preload B
+   │    → crossfade A → B
+   │
+   ├─ แตะ BACK
+   │    → crossfade A → IDLE
+   │
+   └─ video ended
+        → crossfade A → IDLE
+```
+
+Transition เริ่มต้น `420 ms` และสามารถปรับใน `EXHIBIT_CONFIG.playback.transitionMs`
+
+## Double-buffer playback
+
+มี video element 2 ตัวซ้อนกัน:
+
+```text
+Buffer A = visible / playing
+Buffer B = hidden / loading next clip
+```
+
+ก่อนสลับ:
+
+1. กำหนด source ให้ hidden buffer
+2. รอ `loadeddata` หรือ `canplay`
+3. เริ่ม play ที่ volume 0
+4. สลับ opacity A/B
+5. fade audio พร้อมภาพ
+6. pause buffer เก่าหลัง transition
+
+วิธีนี้ลด black frame และการกระตุกจากการเปลี่ยน `src` บน video element เดียว
+
+## Rapid touch policy
+
+ระบบใช้ request token แบบ **latest intent wins**
+
+เช่นผู้ชมแตะ:
+
+`หัวใจ → ปอด → ไต`
+
+ถ้า input มาเร็วกว่า decoder ระบบไม่ต่อคิวเล่นครบทั้งสาม แต่ clip ที่กำลังโหลดซึ่งไม่ใช่คำสั่งล่าสุดจะถูกทิ้ง และไปที่ `ไต`
+
+## Story controls
+
+ขณะวิดีโอย่อยเล่น:
+
+- Universal Reach 8 จุดยังคงอยู่แบบ opacity ต่ำ
+- เรื่องที่กำลังเล่น highlight ชัดขึ้น
+- แตะเรื่องอื่น = เปลี่ยนทันที
+- แตะเรื่องเดิม = กลับหน้าหลัก
+- มีปุ่ม BACK แยกสำหรับทุกวัย
+- F8 แสดง Touch Area สำหรับ QC
+
+## Media inventory
+
+Operator F9 อ่านสถานะไฟล์จาก Electron:
+
+- `9/9` = พร้อม
+- ถ้าไม่ครบ จะแสดง filename ที่หาย
+- Web Preview แสดงว่าไม่โหลด media จริง
+
+## Export recommendation
+
+ไฟล์ทั้ง 9 ควรใช้มาตรฐานเดียวกัน:
+
+- Resolution เดียวกันทั้งชุด
+- CFR frame rate เดียวกัน เช่น 30 fps
+- H.264
+- AAC 48 kHz
+- keyframe interval สม่ำเสมอ
+- ไม่มี VFR
+- `idle.mp4` ต้อง seamless loop จริง
+
+ถ้าจะใช้ 4K ให้ล็อกเครื่อง Kiosk / GPU / projector chain ก่อน export final ไม่ควรผสม 1080p และ 4K ในชุด production เดียวกัน
+
+## Final QC ก่อนส่งมอบ
+
+1. ตรวจ Operator MEDIA = 9/9
+2. ทดสอบ Main → ทุก Story → Main
+3. ทดสอบแตะเรื่องเดิมซ้ำ
+4. ทดสอบ Story A → Story B ทุกคู่ที่สำคัญ
+5. ทดสอบแตะรัวหลายจุด
+6. ทดสอบ BACK ทั้ง touch screen และ sensor
+7. ทดสอบ story ended กลับ Main
+8. ถอดอินเทอร์เน็ตแล้วทดสอบทั้งหมดอีกครั้ง
+9. restart Windows / auto-start kiosk
+10. burn-in ต่อเนื่องหลายชั่วโมง
+11. ตรวจ audio output หลัง sleep/restart
+12. ทดสอบจริงกับเด็ก ผู้ใหญ่ และผู้ใช้รถเข็น

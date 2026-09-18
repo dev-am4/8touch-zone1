@@ -5,6 +5,12 @@ export const EXHIBIT_CONFIG = {
   idleHint: 'แตะจุดด้านล่างเพื่อเลือกอวัยวะ',
   storyDurationMs: 12000,
   returnDelayMs: 900,
+  playback: {
+    transitionMs: 420,
+    latestIntentWins: true,
+    sameTouchCancels: true,
+    storyEndReturnsIdle: true,
+  },
   touchCooldownMs: 450,
   sensorEventName: 'zone1:touch',
 

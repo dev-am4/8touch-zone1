@@ -1,9 +1,9 @@
 /**
- * Media contract
+ * Media contract.
  *
- * Web/Vercel currently runs in prototype mode and must never request real videos.
- * When the kiosk phase starts, Electron can provide local file URLs through the same
- * contract without changing the interaction/state-machine layer.
+ * Browser/Vercel stays in prototype mode and never requests heavy media.
+ * Electron resolves files from the local kiosk media directory through the
+ * zone1-media:// custom protocol registered by electron/main.cjs.
  */
 
 export function createPrototypeMediaProvider() {
@@ -22,4 +22,15 @@ export function createKioskMediaProvider(resolveLocalAsset) {
     getIdle: () => resolveLocalAsset('idle.mp4'),
     getStory: (organId) => resolveLocalAsset(organId + '.mp4'),
   }
+}
+
+export function createRuntimeMediaProvider() {
+  if (typeof window !== 'undefined' && window.zone1Kiosk?.isElectron) {
+    return createKioskMediaProvider((filename) => {
+      const encoded = encodeURIComponent(filename)
+      return 'zone1-media://asset/' + encoded
+    })
+  }
+
+  return createPrototypeMediaProvider()
 }
