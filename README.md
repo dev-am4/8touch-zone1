@@ -64,6 +64,7 @@ Vite จะคัดลอก media เข้า build และ Electron จะ
 ## Operator / หน้างาน
 
 - F9 — เปิด/ปิด Diagnostic Panel
+- F8 — แสดง/ซ่อน Touch Area สำหรับ Calibration หน้างาน
 - Ctrl + Shift + I — กลับ Idle
 - Ctrl + Shift + Q — ออกจาก Kiosk
 - Double click มุมซ้ายบน — เปิด Operator Panel สำรอง
@@ -73,7 +74,9 @@ Vite จะคัดลอก media เข้า build และ Electron จะ
 
 ถ้าเซ็นเซอร์ของหน้างานส่งตำแหน่งเป็น Mouse/Touch ของ Windows ใช้งานได้ทันที เพราะ hotspot ใช้ Pointer Events
 
-ถ้าต้องรับพิกัดจาก middleware ให้ส่ง normalized coordinate 0–1 ด้วย CustomEvent ชื่อ zone1:touch และ detail เป็น { x, y } หรือส่ง window.postMessage โดย type เป็น zone1:touch
+ถ้าต้องรับพิกัดจาก middleware ให้ส่งพิกัดของทั้งจอได้ทั้ง normalized 0–1 หรือ pixel ด้วย CustomEvent ชื่อ zone1:touch และ detail เป็น { x, y } หรือส่ง window.postMessage โดย type เป็น zone1:touch
+
+ระบบจะแปลงพิกัดจากทั้งจอเข้าสู่ coordinate space ของร่างกายก่อน hit-test จึงไม่เพี้ยนเมื่อสัดส่วนจอหรือขนาด body map เปลี่ยน และมี touch cooldown สำหรับลด event ซ้ำจาก sensor
 
 ตัวอย่างแนวคิด:
 
@@ -94,3 +97,12 @@ window.dispatchEvent(new CustomEvent('zone1:touch', {
 - ทดสอบ touch ทุกจุดอย่างน้อย 100 ครั้ง
 - ทดสอบ restart หลังไฟดับ/เปิดเครื่องใหม่
 - สำรอง installer + media ไว้ใน SSD แยกอีกชุด
+
+
+## Production interaction refinements
+
+- Clip mode ไม่มีแถบปุ่ม 8 รายการบังวิดีโอแล้ว
+- ระหว่างคลิปยังมี invisible touch layer ตำแหน่งเดียวกับร่างกาย ผู้ชมจึงแตะอวัยวะอื่นเพื่อเปลี่ยนคลิปได้ทันที
+- F8 ใช้ตรวจขอบเขตพื้นที่แตะตอน calibration
+- Electron เปิด autoplay policy สำหรับเสียงจากระบบ sensor และปิด background throttling
+- Vercel Git auto deploy ถูกควบคุมผ่าน vercel.json เพื่อไม่ให้ทุก commit ระหว่างปรับหน้างานสร้าง deployment
