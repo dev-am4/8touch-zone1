@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BodyMap from './components/BodyMap'
+import CalibrationOverlay from './components/CalibrationOverlay'
 import OperatorPanel from './components/OperatorPanel'
 import PrototypeScene from './components/PrototypeScene'
 import { EXHIBIT_CONFIG } from './config/exhibit'
 import { getOrgan } from './data/organs'
+import {
+  loadCalibration,
+  resetCalibration,
+  saveCalibration,
+} from './core/calibration'
 import { createPrototypeMediaProvider } from './core/mediaProvider'
 import { hitTestBodyMap } from './core/touchEngine'
 
@@ -14,6 +20,8 @@ export default function App() {
   const [activeId, setActiveId] = useState(null)
   const [operatorOpen, setOperatorOpen] = useState(false)
   const [debugTouch, setDebugTouch] = useState(false)
+  const [calibrationMode, setCalibrationMode] = useState(false)
+  const [calibration, setCalibration] = useState(() => loadCalibration())
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
 
   const storyTimer = useRef(null)
@@ -30,7 +38,31 @@ export default function App() {
     setActiveId(null)
   }, [clearStoryTimer])
 
+  const applyCalibration = useCallback((nextCalibration) => {
+    const saved = saveCalibration(nextCalibration)
+    setCalibration(saved)
+  }, [])
+
+  const resetCalibrationLayout = useCallback(() => {
+    const reset = resetCalibration()
+    setCalibration(reset)
+  }, [])
+
+  const enterCalibration = useCallback(() => {
+    goIdle()
+    setOperatorOpen(false)
+    setDebugTouch(true)
+    setCalibrationMode(true)
+  }, [goIdle])
+
+  const exitCalibration = useCallback(() => {
+    setCalibrationMode(false)
+    setDebugTouch(false)
+  }, [])
+
   const playOrgan = useCallback((id) => {
+    if (calibrationMode) return
+
     const organ = getOrgan(id)
     if (!organ) return
 
@@ -46,19 +78,23 @@ export default function App() {
       setState('idle')
       setActiveId(null)
     }, EXHIBIT_CONFIG.storyDurationMs)
-  }, [clearStoryTimer])
+  }, [calibrationMode, clearStoryTimer])
 
   const handleSensorPoint = useCallback((x, y) => {
+    if (calibrationMode) return
+
     const surface = document.querySelector('.touch-coordinate-space')
     const organ = hitTestBodyMap({
       x,
       y,
       surface,
+      calibration,
       accessRadius: EXHIBIT_CONFIG.touchLayout.accessTouchRadius,
       anatomicalRadius: EXHIBIT_CONFIG.touchLayout.anatomicalTouchRadius,
     })
+
     if (organ) playOrgan(organ.id)
-  }, [playOrgan])
+  }, [calibration, calibrationMode, playOrgan])
 
   useEffect(() => {
     const eventName = EXHIBIT_CONFIG.sensorEventName
@@ -87,19 +123,30 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key === 'F8') {
+      if (event.key === 'F7') {
+        event.preventDefault()
+        if (calibrationMode) exitCalibration()
+        else enterCalibration()
+      }
+
+      if (event.key === 'F8' && !calibrationMode) {
         event.preventDefault()
         setDebugTouch((value) => !value)
       }
 
-      if (event.key === 'F9') {
+      if (event.key === 'F9' && !calibrationMode) {
         event.preventDefault()
         setOperatorOpen((value) => !value)
       }
 
-      if (event.key === 'Escape' && operatorOpen) {
-        event.preventDefault()
-        setOperatorOpen(false)
+      if (event.key === 'Escape') {
+        if (calibrationMode) {
+          event.preventDefault()
+          exitCalibration()
+        } else if (operatorOpen) {
+          event.preventDefault()
+          setOperatorOpen(false)
+        }
       }
 
       if ((event.key === 'Home' || event.key.toLowerCase() === 'i') && event.ctrlKey && event.shiftKey) {
@@ -110,13 +157,17 @@ export default function App() {
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [goIdle, operatorOpen])
+  }, [calibrationMode, enterCalibration, exitCalibration, goIdle, operatorOpen])
 
   useEffect(() => () => clearStoryTimer(), [clearStoryTimer])
 
   return (
     <main
-      className={'app-shell' + (debugTouch ? ' show-touch-debug' : '')}
+      className={
+        'app-shell' +
+        (debugTouch ? ' show-touch-debug' : '') +
+        (calibrationMode ? ' calibration-active' : '')
+      }
       onPointerMove={(event) => {
         if (!operatorOpen) return
         setPointer({ x: Math.round(event.clientX), y: Math.round(event.clientY) })
@@ -134,7 +185,12 @@ export default function App() {
             <p>{EXHIBIT_CONFIG.subtitle}</p>
           </header>
 
-          <BodyMap onSelect={playOrgan} debug={debugTouch} />
+          <BodyMap
+            onSelect={playOrgan}
+            calibration={calibration}
+            debug={debugTouch}
+            disabled={calibrationMode}
+          />
 
           <div className="touch-instruction">
             <span className="touch-icon" />
@@ -147,11 +203,25 @@ export default function App() {
           <div className="prototype-badge">
             STRUCTURE PREVIEW · NO VIDEO LOADING
           </div>
+
+          {calibrationMode && (
+            <CalibrationOverlay
+              calibration={calibration}
+              onChange={applyCalibration}
+              onReset={resetCalibrationLayout}
+              onClose={exitCalibration}
+            />
+          )}
         </section>
       ) : (
         <section className="stage story-stage">
           <PrototypeScene organ={activeOrgan} />
-          <BodyMap onSelect={playOrgan} debug={debugTouch} invisible />
+          <BodyMap
+            onSelect={playOrgan}
+            calibration={calibration}
+            debug={debugTouch}
+            invisible
+          />
 
           <div className="story-switch-hint">
             <span />
@@ -164,7 +234,9 @@ export default function App() {
         type="button"
         className="operator-corner"
         aria-label="เปิด Operator Panel"
-        onDoubleClick={() => setOperatorOpen(true)}
+        onDoubleClick={() => {
+          if (!calibrationMode) setOperatorOpen(true)
+        }}
       />
 
       <OperatorPanel
@@ -173,10 +245,12 @@ export default function App() {
         activeId={activeId}
         pointer={pointer}
         debugTouch={debugTouch}
+        calibration={calibration}
         onClose={() => setOperatorOpen(false)}
         onIdle={goIdle}
         onSelect={playOrgan}
         onToggleDebug={() => setDebugTouch((value) => !value)}
+        onOpenCalibration={enterCalibration}
       />
 
       <div className="runtime-indicator" aria-hidden="true">
