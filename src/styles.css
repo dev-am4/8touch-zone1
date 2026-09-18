@@ -818,3 +818,280 @@ button {
     min-height: 68px;
   }
 }
+
+
+/* Calibration mode */
+
+.calibration-active .idle-copy,
+.calibration-active .touch-instruction,
+.calibration-active .prototype-badge {
+  opacity: .16;
+  transition: opacity .2s ease;
+  pointer-events: none;
+}
+
+.calibration-active .access-target,
+.calibration-active .sensor-anatomy {
+  pointer-events: none;
+}
+
+.calibration-surface {
+  z-index: 32;
+  outline: 1px dashed rgba(255, 211, 132, .72);
+  outline-offset: 3px;
+  touch-action: none;
+}
+
+.calibration-surface::before {
+  content: "DRAG AREA · BODY MAP COORDINATE 0–100";
+  position: absolute;
+  left: 0;
+  top: -1.7rem;
+  color: rgba(255, 218, 154, .72);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+
+.calibration-band-handle {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: var(--band-y);
+  height: 22%;
+  transform: translateY(-50%);
+  border: 1px dashed rgba(255, 206, 112, .64);
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(180deg, rgba(255, 196, 90, .045), rgba(255, 196, 90, .015));
+  cursor: ns-resize;
+  touch-action: none;
+  z-index: 1;
+}
+
+.calibration-band-handle::before,
+.calibration-band-handle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 42px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: rgba(255, 219, 156, .6);
+  box-shadow:
+    0 -5px 0 rgba(255, 219, 156, .28),
+    0 5px 0 rgba(255, 219, 156, .28);
+}
+
+.calibration-band-handle::before {
+  top: .65rem;
+}
+
+.calibration-band-handle::after {
+  bottom: .65rem;
+}
+
+.calibration-band-handle > span {
+  position: absolute;
+  right: .7rem;
+  top: .45rem;
+  color: rgba(255, 224, 170, .62);
+  font-size: .58rem;
+  letter-spacing: .08em;
+  pointer-events: none;
+}
+
+.calibration-point {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 16.5%;
+  min-width: 96px;
+  min-height: 58px;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1.55rem 1fr;
+  align-items: center;
+  gap: .35rem;
+  padding: .48rem .58rem;
+  border: 1px solid hsla(var(--hue), 92%, 72%, .74);
+  border-radius: .85rem;
+  background: rgba(4, 13, 20, .94);
+  color: white;
+  box-shadow:
+    0 0 20px hsla(var(--hue), 92%, 58%, .14),
+    0 8px 22px rgba(0,0,0,.24);
+  cursor: grab;
+  touch-action: none;
+}
+
+.calibration-point:active {
+  cursor: grabbing;
+}
+
+.calibration-point.is-selected {
+  border-width: 2px;
+  background: hsla(var(--hue), 60%, 22%, .82);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.08),
+    0 0 30px hsla(var(--hue), 92%, 58%, .28);
+}
+
+.calibration-point > span {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: hsla(var(--hue), 82%, 48%, .18);
+  color: hsla(var(--hue), 92%, 80%, .95);
+  font-size: .58rem;
+  font-weight: 800;
+}
+
+.calibration-point > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(.6rem, .7vw, .84rem);
+  text-align: left;
+}
+
+.calibration-panel {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 60;
+  width: min(390px, 30vw);
+  padding: 1rem;
+  border: 1px solid rgba(255, 205, 113, .28);
+  border-radius: 1.1rem;
+  background: rgba(5, 11, 16, .95);
+  box-shadow: 0 22px 70px rgba(0,0,0,.52);
+  backdrop-filter: blur(22px);
+  user-select: none;
+}
+
+.calibration-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calibration-panel-head small,
+.calibration-panel-head strong {
+  display: block;
+}
+
+.calibration-panel-head small {
+  color: #ffd89a;
+  font-size: .62rem;
+  letter-spacing: .13em;
+}
+
+.calibration-panel-head strong {
+  margin-top: .15rem;
+}
+
+.calibration-panel-head button,
+.calibration-panel-actions button,
+.calibration-nudge button {
+  border: 1px solid rgba(255, 213, 139, .22);
+  border-radius: .65rem;
+  background: rgba(255,255,255,.04);
+  color: white;
+  min-height: 38px;
+}
+
+.calibration-panel > p {
+  color: rgba(227, 244, 248, .56);
+  font-size: .72rem;
+  line-height: 1.55;
+}
+
+.calibration-readout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  margin: .8rem 0;
+}
+
+.calibration-readout > div {
+  padding: .65rem;
+  border-radius: .7rem;
+  background: rgba(255,255,255,.035);
+}
+
+.calibration-readout small,
+.calibration-readout strong {
+  display: block;
+}
+
+.calibration-readout small {
+  color: rgba(216, 240, 246, .4);
+  font-size: .55rem;
+  letter-spacing: .08em;
+}
+
+.calibration-readout strong {
+  margin-top: .18rem;
+  font-size: .78rem;
+}
+
+.calibration-nudge {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .38rem;
+}
+
+.calibration-nudge button:disabled {
+  opacity: .25;
+}
+
+.calibration-panel-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem;
+  margin-top: .55rem;
+}
+
+.calibration-panel-actions .danger {
+  border-color: rgba(255, 108, 108, .24);
+  color: #ffb0ad;
+}
+
+.calibration-note {
+  display: block;
+  margin-top: .7rem;
+  color: rgba(220, 241, 245, .38);
+  line-height: 1.55;
+}
+
+.operator-actions-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.operator-calibration {
+  border-color: rgba(255, 204, 111, .32) !important;
+  color: #ffd89a !important;
+}
+
+.operator-section-label {
+  margin: .15rem 0 .55rem;
+  color: rgba(255, 215, 146, .48);
+  font-size: .6rem;
+  letter-spacing: .12em;
+}
+
+@media (max-width: 1100px) {
+  .calibration-panel {
+    width: min(360px, 36vw);
+  }
+
+  .calibration-point {
+    min-width: 82px;
+    min-height: 54px;
+  }
+}
