@@ -85,7 +85,7 @@ export default function BodyMap({ onSelect, debug = false, invisible = false }) 
         </button>
       ))}
 
-      {invisible && ORGANS.map((organ) => (
+      {ORGANS.map((organ) => (
         <button
           type="button"
           key={'anatomy-' + organ.id}
