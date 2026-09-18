@@ -1,5 +1,7 @@
 :root {
-  font-family: "Noto Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  --font-netflix: Arial, "Helvetica Neue", "Leelawadee UI", "Noto Sans Thai", Tahoma, sans-serif;
+  --font-netflix-display: "Arial Narrow", Arial, "Helvetica Neue", "Leelawadee UI", "Noto Sans Thai", sans-serif;
+  font-family: var(--font-netflix);
   color: #effcff;
   background: #02070d;
   font-synthesis: none;
@@ -106,6 +108,7 @@ button {
 
 .idle-copy h1 {
   margin: 0;
+  font-family: var(--font-netflix-display);
   font-size: clamp(2rem, 4vw, 5rem);
   line-height: 1.05;
   letter-spacing: -.03em;
@@ -433,6 +436,7 @@ button {
 
 .prototype-copy h2 {
   margin: 0;
+  font-family: var(--font-netflix-display);
   font-size: clamp(3rem, 7vw, 8rem);
   line-height: .98;
   letter-spacing: -.04em;
