@@ -10,6 +10,13 @@ export const EXHIBIT_CONFIG = {
 
   touchLayout: {
     mode: 'dual-zone-universal-reach',
+    backTarget: {
+      x: 4,
+      y: 84,
+      width: 18,
+      height: 11,
+      note: 'Screen-space back target in lower-left universal reach area while a story is active.',
+    },
     accessTouchRadius: 11,
     anatomicalTouchRadius: 7,
     accessBandY: { min: 76, max: 94 },
