@@ -108,6 +108,8 @@ export default function PlaybackStage({
   provider,
   activeOrgan,
   transitionMs = 420,
+  homeFrameSeconds = 0,
+  restartIdleAtHomeFrame = true,
   onStoryEnded,
   onPlaybackError,
 }) {
@@ -178,6 +180,8 @@ export default function PlaybackStage({
           incoming.load()
         } else if (target.kind === 'story') {
           incoming.currentTime = 0
+        } else if (target.kind === 'idle' && restartIdleAtHomeFrame) {
+          incoming.currentTime = homeFrameSeconds
         }
 
         await waitForVideoReady(incoming)
@@ -187,9 +191,9 @@ export default function PlaybackStage({
           return
         }
 
-        if (target.kind === 'story') {
+        if (target.kind === 'story' || (target.kind === 'idle' && restartIdleAtHomeFrame)) {
           try {
-            incoming.currentTime = 0
+            incoming.currentTime = target.kind === 'idle' ? homeFrameSeconds : 0
           } catch {
             // Some decoders reject a seek before metadata is fully available.
           }
@@ -241,7 +245,14 @@ export default function PlaybackStage({
     return () => {
       disposed = true
     }
-  }, [hasMedia, target, transitionMs, onPlaybackError])
+  }, [
+    hasMedia,
+    target,
+    transitionMs,
+    homeFrameSeconds,
+    restartIdleAtHomeFrame,
+    onPlaybackError,
+  ])
 
   useEffect(() => {
     return () => {
