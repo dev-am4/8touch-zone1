@@ -17,7 +17,7 @@ export const EXHIBIT_CONFIG = {
   },
   visitorUi: {
     mode: 'video-first',
-    labelsInWebPreview: true,
+    labelsInWebPreview: false,
     labelsInKiosk: false,
     note: 'Final visitor visuals are baked into the videos. Runtime UI remains exactly eight transparent touch points except in debug/operator modes.',
   },
