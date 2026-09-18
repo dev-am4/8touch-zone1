@@ -94,6 +94,7 @@ npm run dev
 
 ## Operator
 
+- F6 — Projection Setup: Grid / Safe Area / ตำแหน่งและขนาด Body Map / Export JSON
 - F7 — Calibration Mode: ลาก Universal Reach Zone ทั้งชุด / ปรับแต่ละจุด / Export JSON
 - F8 — Touch Area Debug Overlay
 - F9 — Operator Panel
@@ -155,3 +156,37 @@ Vercel Git auto deploy ถูกปิดไว้ใน `vercel.json` เพื
 ค่า Calibration จะถูกใช้ทั้งตำแหน่งปุ่มบน UI และ Sensor hit-test จึงไม่มีกรณีภาพขยับแต่จุดตรวจ Sensor ยังอยู่ตำแหน่งเดิม
 
 ก่อนส่งมอบต้องวัดจาก Finished Floor Level และให้กลุ่มทดสอบต่างช่วงความสูง รวมถึงผู้ใช้รถเข็น ทดลองแตะครบทั้ง 8 จุด
+
+
+## Projection Setup Mode
+
+กด `F6` เพื่อเข้า Projection Setup ก่อนทำ Touch Calibration
+
+สามารถ:
+- เปิด Grid และเส้นกึ่งกลางจอ
+- กำหนด Safe Area แยก Top / Right / Bottom / Left
+- ลาก Body Map ทั้งชุดเพื่อเลื่อนตำแหน่ง X/Y
+- ลากมุมขวาล่างเพื่อ Scale ร่างกาย
+- ปรับละเอียด X/Y ทีละ 0.5%
+- ปรับ Scale ทีละ 0.02
+- บันทึกค่าใน `localStorage` อัตโนมัติ
+- Export เป็น `zone1-projection-setup.json`
+- Reset กลับค่าเริ่มต้น
+
+Body Map ที่เห็นใน Idle, Invisible Touch Layer ระหว่าง Story และ Calibration Mode ใช้ Projection Setup ค่าเดียวกันทั้งหมด
+
+ลำดับติดตั้งที่ตั้งใจใช้:
+
+```text
+Projector Warp / Blend
+        ↓
+F6 Projection Setup
+        ↓
+F7 Touch Calibration
+        ↓
+F8 Touch Debug / QC
+        ↓
+ทดสอบเด็ก + ผู้ใหญ่ + ผู้ใช้รถเข็น
+        ↓
+Lock Configuration
+```
