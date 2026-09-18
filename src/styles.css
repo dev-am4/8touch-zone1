@@ -1430,3 +1430,157 @@ button {
     width: min(390px, 38vw);
   }
 }
+
+
+/* Operator Setup V2 */
+
+.operator-panel-v2 {
+  width: min(520px, 46vw);
+}
+
+.system-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  margin: .8rem 0;
+}
+
+.system-status-card {
+  min-height: 86px;
+  padding: .72rem .78rem;
+  border: 1px solid rgba(150, 224, 239, .11);
+  border-radius: .85rem;
+  background: rgba(255,255,255,.025);
+}
+
+.system-status-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.system-status-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.system-status-head small {
+  color: rgba(205, 242, 249, .46);
+  font-size: .58rem;
+  letter-spacing: .1em;
+}
+
+.system-status-head span {
+  width: .48rem;
+  height: .48rem;
+  border-radius: 50%;
+  background: #78858d;
+}
+
+.system-status-card > strong {
+  display: block;
+  margin-top: .3rem;
+  font-size: .83rem;
+  letter-spacing: .03em;
+}
+
+.system-status-card > p {
+  margin: .25rem 0 0;
+  color: rgba(207, 238, 244, .42);
+  font-size: .64rem;
+  line-height: 1.4;
+}
+
+.system-status-card.tone-ready {
+  border-color: rgba(92, 226, 170, .18);
+}
+
+.system-status-card.tone-ready .system-status-head span {
+  background: #5ee6ae;
+  box-shadow: 0 0 10px rgba(94,230,174,.42);
+}
+
+.system-status-card.tone-waiting {
+  border-color: rgba(255, 200, 101, .17);
+}
+
+.system-status-card.tone-waiting .system-status-head span {
+  background: #ffc769;
+  box-shadow: 0 0 10px rgba(255,199,105,.34);
+}
+
+.system-status-card.tone-planned {
+  border-color: rgba(128, 189, 255, .14);
+}
+
+.system-status-card.tone-planned .system-status-head span {
+  background: #83bfff;
+  box-shadow: 0 0 10px rgba(131,191,255,.3);
+}
+
+.operator-system-config {
+  margin: .7rem 0;
+  padding: .8rem;
+  border: 1px solid rgba(119, 227, 249, .13);
+  border-radius: .9rem;
+  background:
+    linear-gradient(135deg, rgba(82, 208, 237, .045), transparent 55%),
+    rgba(255,255,255,.018);
+}
+
+.operator-system-config small,
+.operator-system-config strong {
+  display: block;
+}
+
+.operator-system-config small {
+  color: #78ddf3;
+  font-size: .58rem;
+  letter-spacing: .12em;
+}
+
+.operator-system-config strong {
+  margin-top: .14rem;
+  font-size: .82rem;
+}
+
+.operator-system-config p {
+  margin: .25rem 0 .6rem;
+  color: rgba(207, 239, 245, .42);
+  font-size: .65rem;
+  line-height: 1.45;
+}
+
+.operator-config-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem;
+}
+
+.operator-config-actions button {
+  min-height: 40px;
+  border: 1px solid rgba(124, 223, 244, .18);
+  border-radius: .7rem;
+  background: rgba(255,255,255,.04);
+  color: white;
+}
+
+.operator-config-actions button:first-child {
+  border-color: rgba(89, 226, 171, .3);
+  background: rgba(89, 226, 171, .06);
+}
+
+.operator-import-message {
+  margin-top: .5rem;
+  padding: .45rem .55rem;
+  border-radius: .55rem;
+  background: rgba(255,255,255,.035);
+  color: rgba(216, 244, 249, .62);
+  font-size: .64rem;
+}
+
+@media (max-width: 1100px) {
+  .operator-panel-v2 {
+    width: min(470px, 50vw);
+  }
+}
