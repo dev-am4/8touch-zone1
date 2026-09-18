@@ -22,7 +22,7 @@ import {
   downloadSystemConfig,
   parseSystemConfig,
 } from './core/systemConfig'
-import { hitTestBodyMap, hitTestScreenTarget } from './core/touchEngine'
+import { hitTestBodyMap } from './core/touchEngine'
 
 const mediaProvider = createRuntimeMediaProvider()
 const hasRealMedia = mediaProvider.hasMedia()
@@ -186,18 +186,6 @@ export default function App() {
   const handleSensorPoint = useCallback((x, y) => {
     if (calibrationMode || projectionMode) return
 
-    if (
-      state === 'story' &&
-      hitTestScreenTarget({
-        x,
-        y,
-        target: EXHIBIT_CONFIG.touchLayout.backTarget,
-      })
-    ) {
-      goIdle()
-      return
-    }
-
     const surface = document.querySelector('.touch-coordinate-space')
     const organ = hitTestBodyMap({
       x,
@@ -205,7 +193,6 @@ export default function App() {
       surface,
       calibration,
       accessRadius: EXHIBIT_CONFIG.touchLayout.accessTouchRadius,
-      anatomicalRadius: EXHIBIT_CONFIG.touchLayout.anatomicalTouchRadius,
     })
 
     if (organ) playOrgan(organ.id)
@@ -362,9 +349,6 @@ export default function App() {
   const showVisitorLabels = hasRealMedia
     ? EXHIBIT_CONFIG.visitorUi.labelsInKiosk
     : EXHIBIT_CONFIG.visitorUi.labelsInWebPreview
-  const showBackGraphic = hasRealMedia
-    ? EXHIBIT_CONFIG.visitorUi.backGraphicInKiosk
-    : EXHIBIT_CONFIG.visitorUi.backGraphicInWebPreview
 
   return (
     <main
@@ -423,24 +407,6 @@ export default function App() {
               debug={debugTouch}
               showLabels={showVisitorLabels}
             />
-
-            <button
-              type="button"
-              className={'story-back-button video-back-target' + (showBackGraphic ? ' is-visible-control' : ' is-hit-only')}
-              style={{
-                '--back-x': EXHIBIT_CONFIG.touchLayout.backTarget.x + '%',
-                '--back-y': EXHIBIT_CONFIG.touchLayout.backTarget.y + '%',
-                '--back-width': EXHIBIT_CONFIG.touchLayout.backTarget.width + '%',
-                '--back-height': EXHIBIT_CONFIG.touchLayout.backTarget.height + '%',
-              }}
-              onPointerDown={(event) => {
-                event.preventDefault()
-                goIdle()
-              }}
-              aria-label="กลับหน้าหลัก"
-            >
-              {showBackGraphic && <span className="story-back-icon">←</span>}
-            </button>
           </div>
         )}
 
