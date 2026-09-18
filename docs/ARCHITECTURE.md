@@ -79,6 +79,18 @@ Touch Engine จะแปลงค่าจาก screen → body map local coor
 
 ดังนั้นสามารถเปลี่ยน resolution / aspect ratio / projector mapping ได้โดยไม่ต้องแก้ข้อมูลอวัยวะทั้งหมด
 
+## Projection setup
+
+- F6 = Projection Setup Mode
+- Grid แบ่งพื้นที่ฉายและมีเส้นกึ่งกลาง
+- Safe Area ตั้งค่า margin แยก 4 ด้าน
+- Body Map มี `bodyX / bodyY / bodyScale`
+- ลากตำแหน่งและปรับ Scale ได้โดยไม่แก้โค้ด
+- ค่าถูกเก็บใน localStorage และ Export JSON ได้
+- Body Map, Calibration Overlay และ Touch Layer ใช้ transform ชุดเดียวกัน
+
+ต้องทำ Projection Setup หลัง Warp/Blend ของ Projector เพราะตำแหน่งภาพจริงหลัง mapping เป็น reference ที่ Sensor ต้องอิง
+
 ## Calibration
 
 - F7 = Calibration Mode
@@ -95,6 +107,8 @@ Calibration Mode มี 2 ระดับ:
 ค่าถูก sanitize และเก็บใน localStorage ของเครื่อง Preview/Kiosk และสามารถ Export เป็น JSON สำหรับบันทึกค่าหน้างาน
 
 ทั้ง Rendering และ Sensor Hit Test ใช้ resolver ชุดเดียวกัน ดังนั้นค่าที่เห็นบนจอและค่าที่ Sensor ตรวจจะตรงกัน
+
+ลำดับหน้างานคือ Warp/Blend → F6 Projection Setup → F7 Touch Calibration → F8 Debug/QC
 
 หลังติดตั้ง Projector ต้องทำ Calibration หลัง Warp/Mapping เสร็จแล้ว และต้องทดสอบจาก Finished Floor Level กับผู้ใช้หลายช่วงความสูงก่อนล็อกค่า
 
