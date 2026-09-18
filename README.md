@@ -245,3 +245,21 @@ Sensor จะตรวจพื้นที่ Back ก่อนตรวจจ�
 4. พร้อมให้ผู้ชมคนถัดไปเลือกใหม่ทันที
 
 กด `F8` จะเห็นกรอบ `BACK TOUCH AREA` สำหรับตรวจตำแหน่งหน้างาน
+
+
+## Media Playback Engine V1
+
+Playback flow สำหรับ Kiosk ถูกเตรียมแล้ว:
+
+- Main `idle.mp4` loop
+- แตะอวัยวะ → preload clip ใน hidden buffer → crossfade
+- video จบ → กลับ Main ด้วย `ended` event
+- แตะอวัยวะเดิมซ้ำ → cancel → Main
+- แตะอวัยวะอื่น → เปลี่ยน clip ทันที
+- rapid touch ใช้ latest intent wins
+- ภาพและเสียง fade พร้อมกัน
+- ระหว่าง Story ยังมี Universal Reach controls ให้เลือกเรื่องอื่น
+- Electron อ่าน media จาก local SSD ผ่าน `zone1-media://`
+- F9 ตรวจ media inventory ว่าครบ 9/9
+
+Vercel ยังเป็น Preview และไม่โหลดวิดีโอจริง
