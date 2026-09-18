@@ -47,6 +47,12 @@ export const EXHIBIT_CONFIG = {
     bodyMapMaxHeightVh: 68,
   },
 
+  previewMedia: {
+    idleSrc: '/media/idle.mp4',
+    muted: true,
+    note: 'Web preview uses idle.mp4 when present. Electron kiosk still reads media from the local SSD media folder.',
+  },
+
   kiosk: {
     mediaMode: 'local-video',
     mediaRoot: 'media',
