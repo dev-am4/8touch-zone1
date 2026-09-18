@@ -1700,7 +1700,7 @@ button {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 420ms cubic-bezier(.22,.78,.22,1);
+  transition: opacity var(--playback-transition, 420ms) cubic-bezier(.22,.78,.22,1);
   will-change: opacity;
   background: #02070d;
 }
@@ -1718,11 +1718,11 @@ button {
 }
 
 .playback-prototype-layer.is-incoming {
-  animation: playback-fade-in 420ms cubic-bezier(.22,.78,.22,1) both;
+  animation: playback-fade-in var(--playback-transition, 420ms) cubic-bezier(.22,.78,.22,1) both;
 }
 
 .playback-prototype-layer.is-outgoing {
-  animation: playback-fade-out 420ms cubic-bezier(.22,.78,.22,1) both;
+  animation: playback-fade-out var(--playback-transition, 420ms) cubic-bezier(.22,.78,.22,1) both;
 }
 
 @keyframes playback-fade-in {
