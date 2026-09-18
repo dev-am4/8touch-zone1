@@ -1,10 +1,10 @@
 .attract-message {
   position: absolute;
-  top: clamp(28px, 4.2vh, 54px);
-  left: 50%;
+  top: 18.5vh;
+  left: 69%;
   z-index: 18;
-  width: min(82vw, 1100px);
-  transform: translateX(-50%);
+  width: min(47vw, 820px);
+  transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
 }
@@ -38,4 +38,13 @@
 .calibration-active .attract-message,
 .projection-active .attract-message {
   display: none;
+}
+
+
+@media (max-aspect-ratio: 4/3) {
+  .attract-message {
+    top: 15vh;
+    left: 64%;
+    width: min(54vw, 760px);
+  }
 }
