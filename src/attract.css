@@ -12,7 +12,7 @@
 .attract-message span {
   display: inline-block;
   color: rgba(239, 252, 255, .92);
-  font-family: "Kanit", var(--font-netflix);
+  font-family: var(--font-netflix);
   font-size: clamp(1.5rem, 2.05vw, 2.5rem);
   font-weight: 700;
   line-height: 1.28;
