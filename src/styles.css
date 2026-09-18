@@ -1,6 +1,6 @@
 :root {
-  --font-netflix: "Kanit", "Leelawadee UI", "Noto Sans Thai", Tahoma, sans-serif;
-  --font-netflix-display: "Kanit", "Leelawadee UI", "Noto Sans Thai", sans-serif;
+  --font-netflix: "Helvetica Neue", Helvetica, Arial, "Leelawadee UI", "Noto Sans Thai", Tahoma, sans-serif;
+  --font-netflix-display: "Helvetica Neue", Helvetica, Arial, "Leelawadee UI", "Noto Sans Thai", sans-serif;
   font-family: var(--font-netflix);
   color: #effcff;
   background: #02070d;
