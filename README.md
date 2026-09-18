@@ -278,3 +278,19 @@ Visitor mode ใช้แนวทาง **Video-first**:
 - transition เริ่มต้น 320 ms เพื่อให้ Main ↔ Story และ Story ↔ Story ต่อเนื่องขึ้น
 
 ดู `docs/VIDEO_ALIGNMENT_SPEC.md` ก่อนทำ final video
+
+
+## HOME FRAME + Timing Template
+
+เพื่อให้การกลับ Main เนียนและคาดเดาได้ ระบบ Kiosk จะไม่ resume `idle.mp4` จากเฟรมสุ่มอีกต่อไป แต่จะกลับไปที่ **HOME FRAME = frame 0** ก่อน crossfade
+
+ค่าปัจจุบัน:
+- master 30 fps
+- crossfade 320 ms
+- transition-safe handle 12 frames
+- Story ทุกเรื่องเริ่มที่ frame 0
+- Main ทุกครั้งที่กลับมาเริ่มจาก HOME FRAME
+
+ดู template สำหรับ Premiere:
+- `docs/VIDEO_ALIGNMENT_SPEC.md`
+- `docs/PREMIERE_TIMING_TEMPLATE.md`
