@@ -54,7 +54,8 @@ export default function App() {
       x,
       y,
       surface,
-      radius: EXHIBIT_CONFIG.touchRadius,
+      accessRadius: EXHIBIT_CONFIG.touchLayout.accessTouchRadius,
+      anatomicalRadius: EXHIBIT_CONFIG.touchLayout.anatomicalTouchRadius,
     })
     if (organ) playOrgan(organ.id)
   }, [playOrgan])
@@ -139,7 +140,7 @@ export default function App() {
             <span className="touch-icon" />
             <div>
               <strong>{EXHIBIT_CONFIG.idleHint}</strong>
-              <small>8 จุดสัมผัส · Prototype Interaction</small>
+              <small>8 จุดสัมผัสในโซนเอื้อมถึงง่าย · เด็ก ผู้ใหญ่ และผู้ใช้รถเข็น</small>
             </div>
           </div>
 
