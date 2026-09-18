@@ -170,7 +170,7 @@ export default function OperatorPanel({
       </div>
 
       <div className="operator-section-label">
-        UNIVERSAL REACH · LIVE COORDINATES
+        8 TOUCH POINTS · LIVE COORDINATES
       </div>
 
       <div className="operator-list">
@@ -187,7 +187,7 @@ export default function OperatorPanel({
               <span>{organ.order}</span>
               <strong>{organ.name}</strong>
               <small>
-                A {organ.anchorX},{organ.anchorY} · T {point.x.toFixed(1)},{point.y.toFixed(1)}
+                T {point.x.toFixed(1)},{point.y.toFixed(1)}
               </small>
             </button>
           )
@@ -195,7 +195,7 @@ export default function OperatorPanel({
       </div>
 
       <p className="operator-help">
-        หน้างาน: F6 Projection → F7 Universal Reach → ตรวจ MEDIA ให้ครบ 9/9 → ต่อ Sensor ให้ขึ้น EVENT RECEIVED → F8 Touch QC → Burn-in → ทดสอบทุกวัย
+        หน้างาน: F6 Projection → F7 จัด 8 จุดแตะ → ตรวจ MEDIA ให้ครบ 9/9 → ต่อ Sensor ให้ขึ้น EVENT RECEIVED → F8 Touch QC → Burn-in → ทดสอบทุกวัย
       </p>
     </aside>
   )
