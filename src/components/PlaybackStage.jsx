@@ -52,13 +52,33 @@ function fadeVolumes({ incoming, outgoing, durationMs, onDone }) {
   return () => cancelAnimationFrame(rafId)
 }
 
-function PrototypePlayback({ organ, transitionMs }) {
+function PrototypePlayback({ organ, transitionMs, idleSrc, idleMuted = true }) {
   const currentRef = useRef(organ)
+  const idleVideoRef = useRef(null)
+  const [idleFailed, setIdleFailed] = useState(false)
   const timerRef = useRef(null)
   const [layers, setLayers] = useState({
     current: organ,
     previous: null,
   })
+
+  useEffect(() => {
+    const video = idleVideoRef.current
+    if (!video || !idleSrc || idleFailed) return
+
+    if (organ) {
+      video.pause()
+      return
+    }
+
+    try {
+      video.currentTime = 0
+    } catch {
+      // Metadata may not be ready yet.
+    }
+
+    video.play().catch(() => {})
+  }, [organ, idleSrc, idleFailed])
 
   useEffect(() => {
     const existing = currentRef.current
@@ -85,21 +105,42 @@ function PrototypePlayback({ organ, transitionMs }) {
   return (
     <div
       className="playback-prototype-surface"
-      aria-hidden={!organ}
+      aria-hidden={false}
       style={{ '--playback-transition': transitionMs + 'ms' }}
     >
+      {idleSrc && !idleFailed && (
+        <video
+          ref={idleVideoRef}
+          className={'prototype-idle-video' + (!organ ? ' is-visible' : '')}
+          src={idleSrc}
+          autoPlay
+          loop
+          muted={idleMuted}
+          playsInline
+          preload="auto"
+          onError={() => setIdleFailed(true)}
+        />
+      )}
+
+      {!organ && (!idleSrc || idleFailed) && (
+        <div className="playback-prototype-layer is-incoming">
+          <PrototypeScene />
+        </div>
+      )}
       {layers.previous && (
         <div className="playback-prototype-layer is-outgoing">
           <PrototypeScene organ={layers.previous} />
         </div>
       )}
 
-      <div
-        key={layers.current?.id || 'idle'}
-        className="playback-prototype-layer is-incoming"
-      >
-        <PrototypeScene organ={layers.current} />
-      </div>
+      {layers.current && (
+        <div
+          key={layers.current.id}
+          className="playback-prototype-layer is-incoming"
+        >
+          <PrototypeScene organ={layers.current} />
+        </div>
+      )}
     </div>
   )
 }
@@ -110,6 +151,8 @@ export default function PlaybackStage({
   transitionMs = 420,
   homeFrameSeconds = 0,
   restartIdleAtHomeFrame = true,
+  previewIdleSrc = null,
+  previewIdleMuted = true,
   onStoryEnded,
   onPlaybackError,
 }) {
@@ -269,7 +312,14 @@ export default function PlaybackStage({
   }, [])
 
   if (!hasMedia) {
-    return <PrototypePlayback organ={activeOrgan} transitionMs={transitionMs} />
+    return (
+      <PrototypePlayback
+        organ={activeOrgan}
+        transitionMs={transitionMs}
+        idleSrc={previewIdleSrc}
+        idleMuted={previewIdleMuted}
+      />
+    )
   }
 
   return (
