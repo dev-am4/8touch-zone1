@@ -28,13 +28,13 @@ export default function OperatorPanel({ open, state, activeId, pointer, debugTou
           <button type="button" key={organ.id} className={activeId === organ.id ? 'is-current' : ''} onClick={() => onSelect(organ.id)}>
             <span>{organ.order}</span>
             <strong>{organ.name}</strong>
-            <small>{organ.x}, {organ.y}</small>
+            <small>A {organ.anchorX},{organ.anchorY} · T {organ.touchX},{organ.touchY}</small>
           </button>
         ))}
       </div>
 
       <p className="operator-help">
-        ตอนนี้ไม่มีการโหลดวิดีโอจริง · ใช้หน้านี้สำหรับตรวจ Flow, Touch Map, สัดส่วนจอ และ Calibration เท่านั้น
+        A = ตำแหน่งอวัยวะบนภาพ · T = จุดแตะ Universal Reach ด้านล่าง · ตอนติดตั้งจริงต้องวัดความสูงจากพื้นสำเร็จและคาลิเบรตให้เด็ก ผู้ใช้รถเข็น และผู้ใหญ่เอื้อมถึงได้ทุกจุด
       </p>
     </aside>
   )
