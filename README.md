@@ -263,3 +263,18 @@ Playback flow สำหรับ Kiosk ถูกเตรียมแล้ว:
 - F9 ตรวจ media inventory ว่าครบ 9/9
 
 Vercel ยังเป็น Preview และไม่โหลดวิดีโอจริง
+
+
+## Video-first Visitor UI
+
+Visitor mode ใช้แนวทาง **Video-first**:
+
+- ข้อความและ UI บนจอให้น้อยที่สุด
+- visual button / label / animation หลักอยู่ในวิดีโอที่ตัดต่อมาแล้ว
+- Runtime เหลือ transparent touch layer เท่านั้น
+- Web Preview จะแสดงชื่อ touch แบบจางเพื่อเช็กตำแหน่ง
+- Electron Kiosk ซ่อน label เหล่านี้
+- F8 เปิด hitbox สำหรับช่างเท่านั้น
+- transition เริ่มต้น 320 ms เพื่อให้ Main ↔ Story และ Story ↔ Story ต่อเนื่องขึ้น
+
+ดู `docs/VIDEO_ALIGNMENT_SPEC.md` ก่อนทำ final video
