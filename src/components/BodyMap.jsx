@@ -27,7 +27,7 @@ export default function BodyMap({
         return (
           <button
             type="button"
-            key={'access-' + organ.id}
+            key={organ.id}
             disabled={disabled}
             className={
               'video-touch-target hotspot-' + index +
@@ -56,25 +56,6 @@ export default function BodyMap({
           </button>
         )
       })}
-
-      {ORGANS.map((organ) => (
-        <button
-          type="button"
-          key={'anatomy-' + organ.id}
-          disabled={disabled}
-          className="sensor-hotspot sensor-anatomy video-anatomy-target"
-          style={{
-            '--x': organ.anchorX + '%',
-            '--y': organ.anchorY + '%',
-            '--hue': organ.hue,
-          }}
-          onPointerDown={(event) => {
-            event.preventDefault()
-            if (!disabled) onSelect(organ.id)
-          }}
-          aria-label={'แตะอวัยวะ ' + organ.name}
-        />
-      ))}
     </div>
   )
 }
