@@ -72,9 +72,6 @@ STORY A
    │    → preload B
    │    → crossfade A → B
    │
-   ├─ แตะ BACK
-   │    → crossfade A → IDLE
-   │
    └─ video ended
         → crossfade A → IDLE
 ```
@@ -119,7 +116,8 @@ Visitor mode ใช้ **video-first UI**:
 - Runtime Universal Reach เป็น transparent hit area
 - แตะเรื่องอื่น = เปลี่ยนทันที
 - แตะเรื่องเดิม = กลับหน้าหลัก
-- Back เป็น hit area และสามารถใส่ visual ไว้ในวิดีโอได้
+- ไม่มี Back แยกเป็นจุดที่ 9
+- แตะจุดเดิมซ้ำ = กลับ Main
 - F8 เท่านั้นที่แสดง Touch Area สำหรับ QC
 - Web Preview แสดงชื่อจุดแตะแบบจางเพื่อเช็ก alignment
 
@@ -154,10 +152,33 @@ Operator F9 อ่านสถานะไฟล์จาก Electron:
 3. ทดสอบแตะเรื่องเดิมซ้ำ
 4. ทดสอบ Story A → Story B ทุกคู่ที่สำคัญ
 5. ทดสอบแตะรัวหลายจุด
-6. ทดสอบ BACK ทั้ง touch screen และ sensor
+6. ทดสอบแตะจุดเดิมซ้ำเพื่อกลับ Main
 7. ทดสอบ story ended กลับ Main
 8. ถอดอินเทอร์เน็ตแล้วทดสอบทั้งหมดอีกครั้ง
 9. restart Windows / auto-start kiosk
 10. burn-in ต่อเนื่องหลายชั่วโมง
 11. ตรวจ audio output หลัง sleep/restart
 12. ทดสอบจริงกับเด็ก ผู้ใหญ่ และผู้ใช้รถเข็น
+
+
+## Exact 8-point mapping
+
+Visitor input มีเพียง 8 จุดเท่านั้น
+
+```text
+Point 1 → brain.mp4
+Point 2 → mouth.mp4
+Point 3 → lungs.mp4
+Point 4 → heart.mp4
+Point 5 → liver.mp4
+Point 6 → kidney.mp4
+Point 7 → digestive.mp4
+Point 8 → muscle.mp4
+```
+
+ถ้าคลิปของ Point 4 กำลังเล่น:
+- แตะ Point 4 ซ้ำ → Main
+- แตะ Point 1 → brain.mp4
+- แตะ Point 8 → muscle.mp4
+
+ไม่มี ninth interaction และไม่มี duplicate touch zone
