@@ -109,11 +109,11 @@ button { font:inherit; -webkit-tap-highlight-color:transparent; }
 @keyframes clip-in { from { opacity:0; transform:scale(1.015); } to { opacity:1; transform:scale(1); } }
 .clip-stage::after {
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background:linear-gradient(90deg, rgba(1,5,9,.92), transparent 25%, transparent 72%, rgba(1,5,9,.72)),
-             linear-gradient(0deg, rgba(1,5,9,.9), transparent 25%, transparent 78%, rgba(1,5,9,.75));
+  background:linear-gradient(90deg, rgba(1,5,9,.84), transparent 24%, transparent 82%, rgba(1,5,9,.36)),
+             linear-gradient(0deg, rgba(1,5,9,.88), transparent 24%, transparent 80%, rgba(1,5,9,.62));
 }
 .clip-aura { position:absolute; inset:0; z-index:-1; background:radial-gradient(circle at 50% 50%, hsla(var(--active-hue),70%,42%,.19), transparent 48%); }
-.clip-header, .clip-footer, .switch-rail { position:absolute; z-index:4; }
+.clip-header, .clip-footer { position:absolute; z-index:4; }
 .clip-header { left:4.5vw; top:5vh; display:flex; align-items:center; gap:1.25rem; }
 .clip-header > div { display:flex; align-items:center; gap:.7rem; color:hsla(var(--active-hue),95%,73%,.95); }
 .clip-header span { font-size:clamp(.8rem,1vw,1.2rem); font-weight:800; }
@@ -142,11 +142,11 @@ button { font:inherit; -webkit-tap-highlight-color:transparent; }
 
 .fallback-story {
   position:absolute; inset:0; z-index:0; display:flex; flex-direction:column; justify-content:center;
-  padding-left:11vw; padding-right:30vw;
+  padding-left:11vw; padding-right:11vw;
   background:radial-gradient(circle at 52% 48%, hsla(var(--active-hue),72%,40%,.18), transparent 36%), #02070d;
 }
 .fallback-story h2 { margin:0; font-size:clamp(3rem,7vw,8rem); line-height:.98; }
-.fallback-lead { max-width:38rem; font-size:clamp(1rem,1.7vw,2rem); color:hsla(var(--active-hue),90%,80%,.88); margin:1rem 0 2rem; }
+.fallback-lead { max-width:48rem; font-size:clamp(1rem,1.7vw,2rem); color:hsla(var(--active-hue),90%,80%,.88); margin:1rem 0 2rem; }
 .fallback-flow { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; max-width:52rem; }
 .fallback-flow > div { padding:1rem 1.2rem; border:1px solid rgba(172,235,248,.12); border-radius:1rem; background:rgba(255,255,255,.025); }
 .fallback-flow small { color:rgba(198,241,249,.46); }
@@ -171,7 +171,7 @@ button { font:inherit; -webkit-tap-highlight-color:transparent; }
 .operator-head small, .operator-head strong { display:block; }
 .operator-head small { color:#68dff7; font-size:.68rem; letter-spacing:.16em; }
 .operator-head strong { margin-top:.15rem; }
-.operator-head button, .operator-idle {
+.operator-head button, .operator-idle, .operator-debug {
   border:1px solid rgba(139,223,240,.2); border-radius:.75rem; background:rgba(255,255,255,.04); color:white; padding:.5rem .8rem;
 }
 .operator-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; margin:1rem 0; }
@@ -179,7 +179,10 @@ button { font:inherit; -webkit-tap-highlight-color:transparent; }
 .operator-stats small, .operator-stats strong { display:block; }
 .operator-stats small { color:rgba(203,242,250,.42); font-size:.6rem; }
 .operator-stats strong { margin-top:.2rem; font-size:.8rem; }
-.operator-idle { width:100%; margin-bottom:.6rem; }
+.operator-actions { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.6rem; }
+.operator-idle { width:100%; }
+.operator-debug { width:100%; }
+.operator-debug.is-active { border-color:rgba(255,190,95,.6); background:rgba(255,176,70,.12); color:#ffd99b; }
 .operator-list { display:grid; gap:.35rem; }
 .operator-list > button {
   display:flex; align-items:center; gap:.7rem; width:100%; border:0; border-radius:.8rem; background:rgba(255,255,255,.025);
@@ -197,10 +200,71 @@ button { font:inherit; -webkit-tap-highlight-color:transparent; }
 @media (max-aspect-ratio:4/3) {
   .idle-copy { max-width:55vw; }
   .body-map { width:min(68vw,68vh); }
-  .switch-rail button { min-width:125px; font-size:.8rem; }
-  .fallback-story { padding-left:7vw; padding-right:28vw; }
+  .fallback-story { padding-left:7vw; padding-right:7vw; }
 }
 @media (pointer:coarse) {
   .hotspot { --size:clamp(72px,6.4vw,118px); }
-  .switch-rail button { min-height:52px; }
+  .sensor-hotspot { min-width:72px; min-height:72px; }
+}
+
+
+/* Persistent touch layer: same geometry as the Idle body map.
+   It stays invisible during clips so physical touch sensors can switch organs
+   without adding visible UI over the video. */
+.clip-touch-space {
+  z-index: 6;
+  pointer-events: none;
+}
+
+.sensor-hotspot {
+  --size: clamp(62px, 5.8vw, 116px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  transform: translate(-50%, -50%);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.show-touch-debug .sensor-hotspot {
+  border-color: hsla(var(--hue), 95%, 72%, .74);
+  background: hsla(var(--hue), 82%, 46%, .12);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 0 22px hsla(var(--hue), 90%, 58%, .28);
+}
+
+.show-touch-debug .sensor-hotspot::after {
+  content: "";
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: hsl(var(--hue), 90%, 70%);
+  box-shadow: 0 0 14px hsl(var(--hue), 90%, 62%);
+}
+
+.switch-hint {
+  display: block;
+  margin-top: .28rem;
+  font-size: clamp(.62rem, .72vw, .82rem);
+  font-weight: 500;
+  color: rgba(210, 243, 249, .36);
+}
+
+.show-touch-debug .touch-coordinate-space {
+  outline: 1px dashed rgba(255, 208, 119, .42);
+  outline-offset: 2px;
+}
+
+.show-touch-debug .touch-coordinate-space::after {
+  content: "TOUCH CALIBRATION";
+  position: absolute;
+  top: -1.6rem;
+  left: 0;
+  color: rgba(255, 215, 149, .7);
+  font-size: .65rem;
+  letter-spacing: .16em;
 }
