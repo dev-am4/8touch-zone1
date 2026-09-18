@@ -110,3 +110,21 @@ Web runtime ไม่ควรซ้อนกรอบ UI เพิ่มบน 
 เมื่อ final media ถูกตัดต่อให้ตรงกับตำแหน่งปุ่มแล้ว ให้ถือ Projection + Calibration เป็น **locked media geometry**
 
 ถ้าขยับตำแหน่งปุ่มหลังจากนั้น ต้องแก้ visual button ในวิดีโอให้ตรงอีกครั้ง
+
+
+## HOME FRAME contract
+
+Playback now treats `idle.mp4` frame 0 as the deterministic HOME FRAME.
+
+Whenever a Story:
+- ends,
+- is cancelled by touching the same item,
+- returns by Back,
+
+the hidden idle buffer is prepared at HOME FRAME before the crossfade begins.
+
+This replaces the previous idea of resuming idle from an arbitrary paused frame.
+
+At 30 fps, the current runtime crossfade of 320 ms is approximately 10 frames. Production uses a 12-frame transition-safe handle for margin.
+
+See `PREMIERE_TIMING_TEMPLATE.md` for the exact edit structure.
