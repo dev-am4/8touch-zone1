@@ -81,12 +81,22 @@ Touch Engine จะแปลงค่าจาก screen → body map local coor
 
 ## Calibration
 
+- F7 = Calibration Mode
 - F8 = แสดง Touch Area
 - F9 = Operator Panel
 - Ctrl+Shift+I = กลับ Idle
 - Ctrl+Shift+Q = ออกจาก Electron Kiosk
 
-หลังติดตั้ง Projector ต้องทำ Calibration หลัง Warp/Mapping เสร็จแล้ว
+Calibration Mode มี 2 ระดับ:
+
+1. `bandOffsetY` — เลื่อน Universal Reach Zone ทั้งชุดในแนวตั้ง
+2. `points[organ].dx / dy` — ปรับจุดใดจุดหนึ่งแยกจากตำแหน่งฐาน
+
+ค่าถูก sanitize และเก็บใน localStorage ของเครื่อง Preview/Kiosk และสามารถ Export เป็น JSON สำหรับบันทึกค่าหน้างาน
+
+ทั้ง Rendering และ Sensor Hit Test ใช้ resolver ชุดเดียวกัน ดังนั้นค่าที่เห็นบนจอและค่าที่ Sensor ตรวจจะตรงกัน
+
+หลังติดตั้ง Projector ต้องทำ Calibration หลัง Warp/Mapping เสร็จแล้ว และต้องทดสอบจาก Finished Floor Level กับผู้ใช้หลายช่วงความสูงก่อนล็อกค่า
 
 ## สิ่งที่ยังไม่ทำในระยะนี้
 
