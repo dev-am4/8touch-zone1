@@ -17,6 +17,11 @@ import {
   resetProjectionSetup,
   saveProjectionSetup,
 } from './core/projectionSetup'
+import {
+  createSystemConfig,
+  downloadSystemConfig,
+  parseSystemConfig,
+} from './core/systemConfig'
 import { hitTestBodyMap } from './core/touchEngine'
 
 const mediaProvider = createPrototypeMediaProvider()
@@ -31,6 +36,11 @@ export default function App() {
   const [calibration, setCalibration] = useState(() => loadCalibration())
   const [projection, setProjection] = useState(() => loadProjectionSetup())
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
+  const [sensorStatus, setSensorStatus] = useState({
+    status: 'waiting',
+    lastPoint: { x: '—', y: '—' },
+    lastSeen: null,
+  })
 
   const storyTimer = useRef(null)
   const lastTouch = useRef({ id: null, at: 0 })
@@ -63,6 +73,19 @@ export default function App() {
   const resetProjectionLayout = useCallback(() => {
     setProjection(resetProjectionSetup())
   }, [])
+
+  const exportSystemConfig = useCallback(() => {
+    downloadSystemConfig(createSystemConfig({ calibration, projection }))
+  }, [calibration, projection])
+
+  const importSystemConfig = useCallback((source) => {
+    const imported = parseSystemConfig(source)
+    const savedProjection = saveProjectionSetup(imported.projection)
+    const savedCalibration = saveCalibration(imported.calibration)
+    setProjection(savedProjection)
+    setCalibration(savedCalibration)
+    goIdle()
+  }, [goIdle])
 
   const enterCalibration = useCallback(() => {
     goIdle()
@@ -128,17 +151,34 @@ export default function App() {
   useEffect(() => {
     const eventName = EXHIBIT_CONFIG.sensorEventName
 
+    const recordSensor = (x, y) => {
+      setSensorStatus({
+        status: 'receiving',
+        lastPoint: {
+          x: Number.isInteger(x) ? String(x) : x.toFixed(3),
+          y: Number.isInteger(y) ? String(y) : y.toFixed(3),
+        },
+        lastSeen: Date.now(),
+      })
+    }
+
     const onSensor = (event) => {
       const x = Number(event.detail?.x)
       const y = Number(event.detail?.y)
-      if (Number.isFinite(x) && Number.isFinite(y)) handleSensorPoint(x, y)
+      if (Number.isFinite(x) && Number.isFinite(y)) {
+        recordSensor(x, y)
+        handleSensorPoint(x, y)
+      }
     }
 
     const onMessage = (event) => {
       if (event.data?.type !== eventName) return
       const x = Number(event.data?.x)
       const y = Number(event.data?.y)
-      if (Number.isFinite(x) && Number.isFinite(y)) handleSensorPoint(x, y)
+      if (Number.isFinite(x) && Number.isFinite(y)) {
+        recordSensor(x, y)
+        handleSensorPoint(x, y)
+      }
     }
 
     window.addEventListener(eventName, onSensor)
@@ -309,12 +349,15 @@ export default function App() {
         debugTouch={debugTouch}
         calibration={calibration}
         projection={projection}
+        sensorStatus={sensorStatus}
         onClose={() => setOperatorOpen(false)}
         onIdle={goIdle}
         onSelect={playOrgan}
         onToggleDebug={() => setDebugTouch((value) => !value)}
         onOpenCalibration={enterCalibration}
         onOpenProjection={enterProjection}
+        onExportSystem={exportSystemConfig}
+        onImportSystem={importSystemConfig}
       />
 
       <div className="runtime-indicator" aria-hidden="true">
