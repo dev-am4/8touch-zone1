@@ -122,3 +122,25 @@ Calibration Mode มี 2 ระดับ:
 - ยังไม่ผูก sensor hardware รุ่นจริง
 
 ทั้งหมดนี้จะทำใน Kiosk Integration phase หลัง layout และ touch geometry ผ่าน
+
+
+## Operator Setup V2
+
+Operator Console เป็น orchestration layer สำหรับ setup หน้างาน ไม่ใช่หน้า visitor
+
+สถานะที่แสดง:
+- Projection configuration
+- Touch calibration
+- Sensor event telemetry
+- Runtime mode: Browser / Electron
+- Media phase
+
+Unified System Config ใช้ schema `zone1-system-config` version 1 และรวม:
+- sanitized projection setup
+- sanitized touch calibration
+- sensor contract
+- kiosk/media metadata
+
+ตอน Import ระบบรับเฉพาะ schema ที่ถูกต้อง แล้ว sanitize Projection และ Calibration ซ้ำก่อนบันทึก เพื่อไม่ให้ค่าหลุดช่วงที่ UI รองรับ
+
+ไฟล์ Unified Config ไม่รวมวิดีโอ และไม่รวมข้อมูลเครือข่าย
