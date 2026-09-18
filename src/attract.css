@@ -1,9 +1,9 @@
 .attract-message {
   position: absolute;
-  top: 19.9vh;
+  top: 20.8vh;
   left: 69%;
   z-index: 18;
-  width: min(47vw, 820px);
+  width: min(50vw, 920px);
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
@@ -13,11 +13,13 @@
   display: inline-block;
   color: rgba(239, 252, 255, .92);
   font-family: var(--font-netflix);
-  font-size: clamp(1.08rem, 1.56vw, 1.76rem);
-  font-weight: 600;
-  line-height: 1.08;
+  font-size: clamp(1.55rem, 2.15vw, 2.55rem);
+  font-weight: 700;
+  line-height: 1.16;
   letter-spacing: -.012em;
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: balance;
+  max-width: 100%;
   text-shadow: 0 2px 18px rgba(0,0,0,.58), 0 0 20px rgba(74,218,255,.12);
   animation: attract-message-enter 720ms cubic-bezier(.22,.78,.22,1) both;
 }
