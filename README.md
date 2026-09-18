@@ -11,6 +11,7 @@ Interactive Projection Prototype สำหรับโซน 1 “สุขภ�
 เป้าหมายของระยะนี้คือวางระบบให้พร้อมก่อน:
 - State flow
 - 8 touch points
+- Universal Reach Zone สำหรับเด็ก ผู้ใหญ่ และผู้ใช้รถเข็น
 - Sensor coordinate mapping
 - Projection safe area
 - Calibration
@@ -62,6 +63,16 @@ docs/
 ├── ARCHITECTURE.md
 └── KIOSK_MEDIA_PLAN.md
 ```
+
+## หลักการจุดแตะทุกวัย
+
+แต่ละเรื่องมี 2 ตำแหน่ง interaction:
+- จุดอวัยวะบนร่างกาย สำหรับการแตะตรงแบบ intuitive
+- จุดแตะขนาดใหญ่ใน Universal Reach Zone ด้านล่าง สำหรับผู้ชมทุกช่วงวัยและช่วงเอื้อม
+
+ทั้งสองตำแหน่งเรียกเรื่องเดียวกัน จึงไม่ต้องบังคับเด็กหรือผู้ใช้รถเข็นให้เอื้อมถึงตำแหน่งสมอง/ช่องปากที่อยู่สูงบนภาพ
+
+ตอนติดตั้งจริงต้องวัดระดับจากพื้นสำเร็จและ Calibration ตำแหน่งแถบ Universal Reach ให้สัมพันธ์กับความสูงพื้นที่ฉายจริง
 
 ## 8 จุดสัมผัส
 
