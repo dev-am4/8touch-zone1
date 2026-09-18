@@ -1,16 +1,69 @@
 # 8touch-zone1
 
-Interactive Projection สำหรับโซน 1 “สุขภาพสำคัญอย่างไร” — 8 จุดสัมผัส
+Interactive Projection Prototype สำหรับโซน 1 “สุขภาพสำคัญอย่างไร” — 8 จุดสัมผัส
 
-ระบบนี้ใช้ Web Technology สำหรับพัฒนา และ Electron Kiosk สำหรับติดตั้งจริง โดยใช้วิดีโอ pre-render เป็นคอนเทนต์หลัก เพื่อให้แก้ UI/Hotspot ง่าย แต่หน้างานรัน fullscreen จาก SSD ได้โดยไม่ต้องใช้อินเทอร์เน็ต
+## สถานะปัจจุบัน
+
+ตอนนี้โปรเจกต์อยู่ในระยะ **Structure / Interaction Prototype**
+
+ยัง **ไม่ใส่วิดีโอจริง** และ Web Preview จะไม่พยายามโหลด MP4 ใด ๆ
+
+เป้าหมายของระยะนี้คือวางระบบให้พร้อมก่อน:
+- State flow
+- 8 touch points
+- Sensor coordinate mapping
+- Projection safe area
+- Calibration
+- Operator workflow
+- การสลับเรื่องระหว่างกำลังเล่น
+- การกลับ Idle
+- โครง Media Provider สำหรับ Kiosk ในอนาคต
 
 ## Flow
 
-Power On → Zone1-8Touch.exe → Idle Loop → แตะ 1 ใน 8 จุด → เล่นวิดีโอของอวัยวะ → จบคลิป → กลับ Idle
+```text
+BOOT
+  ↓
+IDLE
+  ↓ แตะอวัยวะ
+STORY
+  ├─ แตะอวัยวะอื่น → เปลี่ยน STORY ทันที
+  └─ หมดเวลา → IDLE
+```
 
-ผู้ชมสามารถแตะอวัยวะอื่นระหว่างคลิปเพื่อเปลี่ยนเรื่องได้ทันที โดยระบบจะไม่ใช้ inactivity timeout ตัดคลิปกลางคัน
+ใน Web Preview หน้า STORY ใช้ Prototype Scene เพื่อดูจังหวะและ UX เท่านั้น
 
-## 8 จุด
+ตอนทำ Kiosk จริง จะเปลี่ยน Presentation Layer เป็น Local Video โดยไม่ต้องรื้อ Touch Engine หรือ State Machine
+
+## โครงสร้างหลัก
+
+```text
+src/
+├── App.jsx
+├── config/
+│   └── exhibit.js
+├── data/
+│   └── organs.js
+├── core/
+│   ├── touchEngine.js
+│   └── mediaProvider.js
+├── components/
+│   ├── BodyMap.jsx
+│   ├── PrototypeScene.jsx
+│   └── OperatorPanel.jsx
+├── main.jsx
+└── styles.css
+
+electron/
+├── main.cjs
+└── preload.cjs
+
+docs/
+├── ARCHITECTURE.md
+└── KIOSK_MEDIA_PLAN.md
+```
+
+## 8 จุดสัมผัส
 
 1. สมอง → โซน 3 ฐานใจสุข กายสุข
 2. ช่องปาก + ฟัน → โซน 2 My Body
@@ -21,88 +74,55 @@ Power On → Zone1-8Touch.exe → Idle Loop → แตะ 1 ใน 8 จุด �
 7. กระเพาะ + ลำไส้ → โซน 3 Food and Fit
 8. กล้ามเนื้อ + กระดูก → โซน 5 Fitness for Health
 
-## พัฒนา
+## Development
 
-ต้องมี Node.js 20+ และ npm
-
+```bash
 npm install
 npm run dev
+```
 
-จากนั้นเปิด http://localhost:5173
+## Operator
 
-ระบบมี fallback visualization ในตัว จึงสามารถทดสอบ interaction ได้แม้ยังไม่ได้ใส่วิดีโอจริง
-
-## Kiosk test
-
-npm install
-npm run kiosk:dev
-
-## Build Windows EXE
-
-ใส่วิดีโอจริงใน public/media ก่อน แล้วรัน:
-
-npm install
-npm run dist:win
-
-ไฟล์ installer/portable จะออกในโฟลเดอร์ release
-
-## Media
-
-ชื่อไฟล์ที่ระบบรอ:
-- public/media/idle.mp4
-- public/media/heart.mp4
-- public/media/lungs.mp4
-- public/media/brain.mp4
-- public/media/digestive.mp4
-- public/media/liver.mp4
-- public/media/kidney.mp4
-- public/media/muscle.mp4
-- public/media/mouth.mp4
-
-Vite จะคัดลอก media เข้า build และ Electron จะอ่านจาก SSD โดยตรง
-
-## Operator / หน้างาน
-
-- F9 — เปิด/ปิด Diagnostic Panel
-- F8 — แสดง/ซ่อน Touch Area สำหรับ Calibration หน้างาน
+- F8 — Touch Area / Calibration Overlay
+- F9 — Operator Panel
 - Ctrl + Shift + I — กลับ Idle
-- Ctrl + Shift + Q — ออกจาก Kiosk
+- Ctrl + Shift + Q — ออกจาก Electron Kiosk
 - Double click มุมซ้ายบน — เปิด Operator Panel สำรอง
-- Operator Panel แสดงสถานะ media และกดทดสอบทั้ง 8 จุดได้
 
 ## Sensor
 
-ถ้าเซ็นเซอร์ของหน้างานส่งตำแหน่งเป็น Mouse/Touch ของ Windows ใช้งานได้ทันที เพราะ hotspot ใช้ Pointer Events
+รองรับทั้ง:
+- Mouse / Windows Touch
+- normalized coordinate 0–1
+- screen pixel coordinate
 
-ถ้าต้องรับพิกัดจาก middleware ให้ส่งพิกัดของทั้งจอได้ทั้ง normalized 0–1 หรือ pixel ด้วย CustomEvent ชื่อ zone1:touch และ detail เป็น { x, y } หรือส่ง window.postMessage โดย type เป็น zone1:touch
+External middleware ส่ง:
 
-ระบบจะแปลงพิกัดจากทั้งจอเข้าสู่ coordinate space ของร่างกายก่อน hit-test จึงไม่เพี้ยนเมื่อสัดส่วนจอหรือขนาด body map เปลี่ยน และมี touch cooldown สำหรับลด event ซ้ำจาก sensor
+```js
+window.dispatchEvent(
+  new CustomEvent('zone1:touch', {
+    detail: { x: 0.56, y: 0.39 }
+  })
+)
+```
 
-ตัวอย่างแนวคิด:
+Touch Engine จะ map จาก screen coordinate เข้า Body Map coordinate ก่อน hit-test
 
-window.dispatchEvent(new CustomEvent('zone1:touch', {
-  detail: { x: 0.56, y: 0.39 }
-}))
+## Kiosk / Video
 
-ระบบจะเลือก hotspot ที่ใกล้พิกัดที่สุดในรัศมีที่กำหนด
+วิดีโอจริงจะถูกใส่ตอนทำ Kiosk เท่านั้น
 
-## Production checklist
+แนวทางคือ:
+- media อยู่ Local SSD
+- ไม่เก็บ media จริงใน Web Preview
+- ไม่ต้อง upload media ไป Vercel
+- Media Provider เป็นตัวเชื่อม State Machine กับไฟล์จริง
+- เปลี่ยนวิดีโอภายหลังได้โดยไม่ต้องรื้อ interaction layer
 
-- ปิด Windows notification
-- ปิด sleep / screen saver
-- ตั้ง Windows Auto Login สำหรับเครื่องนิทรรศการ
-- เพิ่ม Zone1-8Touch.exe ใน Startup
-- ล็อก resolution / refresh rate ให้ตรงกับ projector
-- Calibration sensor หลัง projection mapping
-- ทดสอบ touch ทุกจุดอย่างน้อย 100 ครั้ง
-- ทดสอบ restart หลังไฟดับ/เปิดเครื่องใหม่
-- สำรอง installer + media ไว้ใน SSD แยกอีกชุด
+ดูรายละเอียด:
+- `docs/ARCHITECTURE.md`
+- `docs/KIOSK_MEDIA_PLAN.md`
 
+## Deploy policy
 
-## Production interaction refinements
-
-- Clip mode ไม่มีแถบปุ่ม 8 รายการบังวิดีโอแล้ว
-- ระหว่างคลิปยังมี invisible touch layer ตำแหน่งเดียวกับร่างกาย ผู้ชมจึงแตะอวัยวะอื่นเพื่อเปลี่ยนคลิปได้ทันที
-- F8 ใช้ตรวจขอบเขตพื้นที่แตะตอน calibration
-- Electron เปิด autoplay policy สำหรับเสียงจากระบบ sensor และปิด background throttling
-- Vercel Git auto deploy ถูกควบคุมผ่าน vercel.json เพื่อไม่ให้ทุก commit ระหว่างปรับหน้างานสร้าง deployment
+Vercel Git auto deploy ถูกปิดไว้ใน `vercel.json` เพื่อไม่ให้ทุก commit ระหว่างวางโครงสร้างสร้าง deployment ใหม่
