@@ -5,6 +5,8 @@ let mainWindow = null
 let blockerId = null
 const devUrl = process.env.VITE_DEV_SERVER_URL
 
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1920,
@@ -20,6 +22,8 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      spellcheck: false,
+      backgroundThrottling: false,
     },
   })
 
