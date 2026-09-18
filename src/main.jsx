@@ -6,6 +6,7 @@ const IDLE_MEDIA = './media/idle.mp4'
 const SENSOR_EVENT = 'zone1:touch'
 const RETURN_DELAY_MS = 900
 const FALLBACK_DURATION_MS = 11000
+const TOUCH_COOLDOWN_MS = 450
 
 const ORGANS = [
   { id:'brain', order:'01', name:'สมอง', en:'BRAIN', zone:'โซน 3 · ฐานใจสุข กายสุข', short:'ความคิด · ความจำ · อารมณ์', risk:'ความเครียดสะสมและการพักผ่อนไม่เพียงพอทำให้สมองทำงานหนักเกินไป', care:'พักผ่อนให้เพียงพอ และจัดการความเครียดอย่างเหมาะสม', media:'./media/brain.mp4', x:50, y:14, hue:196 },
@@ -24,7 +25,7 @@ function getOrgan(id) {
 
 function BodyMap({ onSelect, activeId }) {
   return (
-    <div className="body-map" aria-label="แผนที่ร่างกาย 8 จุดสัมผัส">
+    <div className="body-map touch-coordinate-space" aria-label="แผนที่ร่างกาย 8 จุดสัมผัส">
       <svg className="body-svg" viewBox="0 0 100 100" aria-hidden="true">
         <defs>
           <filter id="bodyGlow">
@@ -70,6 +71,28 @@ function BodyMap({ onSelect, activeId }) {
               <small>{organ.en}</small>
             </span>
           </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function TouchOverlay({ onSelect }) {
+  return (
+    <div className="body-map touch-coordinate-space clip-touch-space" aria-label="พื้นที่สัมผัสอวัยวะ">
+      {ORGANS.map(function (organ) {
+        return (
+          <button
+            type="button"
+            key={organ.id}
+            className="sensor-hotspot"
+            style={{ '--x': organ.x + '%', '--y': organ.y + '%', '--hue': organ.hue }}
+            onPointerDown={function (event) {
+              event.preventDefault()
+              onSelect(organ.id)
+            }}
+            aria-label={'เปลี่ยนไปดู ' + organ.name}
+          />
         )
       })}
     </div>
@@ -177,33 +200,21 @@ function ClipStage({ organ, onEnded, onSwitch, onMediaStatus }) {
         <strong>{organ.name}</strong>
       </div>
 
-      <aside className="switch-rail" aria-label="เปลี่ยนอวัยวะ">
-        {ORGANS.map(function (item) {
-          return (
-            <button
-              type="button"
-              key={item.id}
-              className={item.id === organ.id ? 'is-active' : ''}
-              onPointerDown={function (event) {
-                event.preventDefault()
-                onSwitch(item.id)
-              }}
-            >
-              <span>{item.order}</span>{item.name}
-            </button>
-          )
-        })}
-      </aside>
+      <TouchOverlay onSelect={onSwitch} />
 
       <div className="clip-footer">
         <span className="progress-pulse" />
-        <div><small>เชื่อมโยงไป</small><strong>{organ.zone}</strong></div>
+        <div>
+          <small>เชื่อมโยงไป</small>
+          <strong>{organ.zone}</strong>
+          <span className="switch-hint">แตะอวัยวะอื่นเพื่อเปลี่ยนเรื่องได้ทันที</span>
+        </div>
       </div>
     </section>
   )
 }
 
-function OperatorPanel({ open, onClose, state, mediaStatus, onTest, onIdle, pointer }) {
+function OperatorPanel({ open, onClose, state, mediaStatus, onTest, onIdle, pointer, debugTouch, onToggleDebug }) {
   if (!open) return null
   const readyCount = Object.values(mediaStatus).filter(function (status) { return status === 'ready' }).length
 
@@ -220,7 +231,12 @@ function OperatorPanel({ open, onClose, state, mediaStatus, onTest, onIdle, poin
         <div><small>POINTER</small><strong>{pointer.x}, {pointer.y}</strong></div>
       </div>
 
-      <button type="button" className="operator-idle" onClick={onIdle}>กลับ Idle</button>
+      <div className="operator-actions">
+        <button type="button" className="operator-idle" onClick={onIdle}>กลับ Idle</button>
+        <button type="button" className={debugTouch ? 'operator-debug is-active' : 'operator-debug'} onClick={onToggleDebug}>
+          {debugTouch ? 'ซ่อน Touch Area' : 'แสดง Touch Area'}
+        </button>
+      </div>
 
       <div className="operator-list">
         {ORGANS.map(function (organ) {
@@ -235,8 +251,8 @@ function OperatorPanel({ open, onClose, state, mediaStatus, onTest, onIdle, poin
       </div>
 
       <p className="operator-help">
-        Sensor แบบ Mouse/Touch ใช้ได้ทันที · External bridge ส่ง event
-        <code>{SENSOR_EVENT}</code> พร้อมค่า x/y แบบ 0–1
+        Sensor แบบ Mouse/Touch ใช้ได้ทันที · F8 แสดงพื้นที่แตะสำหรับ Calibration · External bridge ส่ง event
+        <code>{SENSOR_EVENT}</code> พร้อมค่า x/y แบบ normalized 0–1 ของทั้งจอ หรือพิกัด pixel
       </p>
     </aside>
   )
@@ -249,7 +265,9 @@ function App() {
   const [operatorOpen, setOperatorOpen] = useState(false)
   const [mediaStatus, setMediaStatus] = useState({ idle:'unknown' })
   const [pointer, setPointer] = useState({ x:0, y:0 })
+  const [debugTouch, setDebugTouch] = useState(false)
   const returnTimer = useRef(null)
+  const lastTouchRef = useRef({ id:null, at:0 })
 
   const activeOrgan = useMemo(function () { return getOrgan(activeId) }, [activeId])
 
@@ -267,6 +285,11 @@ function App() {
 
   const playOrgan = useCallback(function (id) {
     if (!getOrgan(id)) return
+    const now = Date.now()
+    const last = lastTouchRef.current
+    if (last.id === id && now - last.at < TOUCH_COOLDOWN_MS) return
+    lastTouchRef.current = { id:id, at:now }
+
     window.clearTimeout(returnTimer.current)
     setActiveId(id)
     setMode('clip')
@@ -278,18 +301,30 @@ function App() {
   }, [goIdle])
 
   const hitTestSensor = useCallback(function (x, y) {
+    const surface = document.querySelector('.touch-coordinate-space')
+    if (!surface) return
+
+    const rect = surface.getBoundingClientRect()
+    const screenX = x >= 0 && x <= 1 ? x * window.innerWidth : x
+    const screenY = y >= 0 && y <= 1 ? y * window.innerHeight : y
+    const localX = ((screenX - rect.left) / rect.width) * 100
+    const localY = ((screenY - rect.top) / rect.height) * 100
+
+    if (localX < -5 || localX > 105 || localY < -5 || localY > 105) return
+
     let winner = null
     let nearest = Infinity
     ORGANS.forEach(function (organ) {
-      const dx = x * 100 - organ.x
-      const dy = y * 100 - organ.y
+      const dx = localX - organ.x
+      const dy = localY - organ.y
       const distance = Math.sqrt(dx * dx + dy * dy)
       if (distance < nearest) {
         nearest = distance
         winner = organ
       }
     })
-    if (winner && nearest <= 10) playOrgan(winner.id)
+
+    if (winner && nearest <= 11) playOrgan(winner.id)
   }, [playOrgan])
 
   useEffect(function () {
@@ -323,6 +358,10 @@ function App() {
       if (event.key === 'F9') {
         event.preventDefault()
         setOperatorOpen(function (value) { return !value })
+      }
+      if (event.key === 'F8') {
+        event.preventDefault()
+        setDebugTouch(function (value) { return !value })
       }
       if (event.key === 'Escape' && operatorOpen) {
         event.preventDefault()
@@ -363,7 +402,7 @@ function App() {
 
   return (
     <main
-      className="app-shell"
+      className={'app-shell' + (debugTouch ? ' show-touch-debug' : '')}
       onPointerMove={function (event) {
         if (!operatorOpen) return
         setPointer({ x:Math.round(event.clientX), y:Math.round(event.clientY) })
@@ -392,6 +431,8 @@ function App() {
         onTest={playOrgan}
         onIdle={goIdle}
         pointer={pointer}
+        debugTouch={debugTouch}
+        onToggleDebug={function () { setDebugTouch(function (value) { return !value }) }}
       />
     </main>
   )
