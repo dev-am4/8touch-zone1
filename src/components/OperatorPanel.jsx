@@ -8,11 +8,13 @@ export default function OperatorPanel({
   pointer,
   debugTouch,
   calibration,
+  projection,
   onClose,
   onIdle,
   onSelect,
   onToggleDebug,
   onOpenCalibration,
+  onOpenProjection,
 }) {
   if (!open) return null
 
@@ -29,14 +31,21 @@ export default function OperatorPanel({
         <div><small>POINTER</small><strong>{pointer.x}, {pointer.y}</strong></div>
       </div>
 
-      <div className="operator-actions operator-actions-3">
+      <div className="operator-actions operator-actions-4">
         <button type="button" onClick={onIdle}>กลับ Idle</button>
         <button type="button" className={debugTouch ? 'is-active' : ''} onClick={onToggleDebug}>
-          {debugTouch ? 'ซ่อน Touch Area' : 'แสดง Touch Area'}
+          {debugTouch ? 'ซ่อน Touch' : 'แสดง Touch'}
+        </button>
+        <button type="button" className="operator-projection" onClick={onOpenProjection}>
+          F6 Projection
         </button>
         <button type="button" className="operator-calibration" onClick={onOpenCalibration}>
-          Calibration
+          F7 Touch
         </button>
+      </div>
+
+      <div className="operator-section-label">
+        PROJECTION · X {projection.bodyX.toFixed(1)} · Y {projection.bodyY.toFixed(1)} · SCALE {projection.bodyScale.toFixed(2)}
       </div>
 
       <div className="operator-section-label">
@@ -65,8 +74,7 @@ export default function OperatorPanel({
       </div>
 
       <p className="operator-help">
-        F7 = Calibration Mode · A = ตำแหน่งอวัยวะบนภาพ · T = จุดแตะ Universal Reach หลังรวมค่าคาลิเบรต
-        · Final QC ต้องวัดจากพื้นสำเร็จและทดสอบจริงกับเด็ก ผู้ใหญ่ และผู้ใช้รถเข็น
+        ลำดับหน้างาน: F6 จัดภาพ/ขนาด/พื้นที่ปลอดภัย → F7 จัดจุดแตะ → F8 ตรวจ Touch Area → ทดสอบจริงทุกวัย
       </p>
     </aside>
   )
