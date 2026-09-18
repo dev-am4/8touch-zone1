@@ -1,4 +1,5 @@
 import { ORGANS } from '../data/organs'
+import { resolveTouchPoint } from './calibration'
 
 export function normalizeSensorPoint(x, y) {
   const screenX = x >= 0 && x <= 1 ? x * window.innerWidth : x
@@ -18,13 +19,32 @@ function toLocalPoint({ x, y, surface }) {
   return { localX, localY }
 }
 
-function nearestOrgan({ localX, localY, xKey, yKey, radius }) {
+function nearestAccessible({ localX, localY, radius, calibration }) {
   let winner = null
   let nearest = Infinity
 
   ORGANS.forEach((organ) => {
-    const dx = localX - organ[xKey]
-    const dy = localY - organ[yKey]
+    const point = resolveTouchPoint(organ, calibration)
+    const dx = localX - point.x
+    const dy = localY - point.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    if (distance < nearest) {
+      nearest = distance
+      winner = organ
+    }
+  })
+
+  return winner && nearest <= radius ? winner : null
+}
+
+function nearestAnatomical({ localX, localY, radius }) {
+  let winner = null
+  let nearest = Infinity
+
+  ORGANS.forEach((organ) => {
+    const dx = localX - organ.anchorX
+    const dy = localY - organ.anchorY
     const distance = Math.sqrt(dx * dx + dy * dy)
 
     if (distance < nearest) {
@@ -40,27 +60,23 @@ export function hitTestBodyMap({
   x,
   y,
   surface,
+  calibration,
   accessRadius = 11,
   anatomicalRadius = 7,
 }) {
   const point = toLocalPoint({ x, y, surface })
   if (!point) return null
 
-  // Accessible lower-zone targets have priority because they are the universal input path.
-  const accessible = nearestOrgan({
+  const accessible = nearestAccessible({
     ...point,
-    xKey: 'touchX',
-    yKey: 'touchY',
     radius: accessRadius,
+    calibration,
   })
 
   if (accessible) return accessible
 
-  // Anatomical hit areas remain available as a secondary path for taller users.
-  return nearestOrgan({
+  return nearestAnatomical({
     ...point,
-    xKey: 'anchorX',
-    yKey: 'anchorY',
     radius: anatomicalRadius,
   })
 }
