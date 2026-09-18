@@ -7,6 +7,21 @@ export function normalizeSensorPoint(x, y) {
   return { screenX, screenY }
 }
 
+export function hitTestScreenTarget({ x, y, target }) {
+  if (!target) return false
+
+  const { screenX, screenY } = normalizeSensorPoint(x, y)
+  const localX = (screenX / window.innerWidth) * 100
+  const localY = (screenY / window.innerHeight) * 100
+
+  return (
+    localX >= target.x &&
+    localX <= target.x + target.width &&
+    localY >= target.y &&
+    localY <= target.y + target.height
+  )
+}
+
 function toLocalPoint({ x, y, surface }) {
   if (!surface) return null
 
