@@ -1,6 +1,7 @@
 import { ORGANS } from '../data/organs'
+import { resolveTouchPoint } from '../core/calibration'
 
-export default function BodyMap({ onSelect, debug = false, invisible = false }) {
+export default function BodyMap({ onSelect, calibration, debug = false, invisible = false, disabled = false }) {
   return (
     <div className={'body-map touch-coordinate-space' + (invisible ? ' body-map-invisible' : '') + (debug ? ' is-debug' : '')}>
       {!invisible && (
@@ -30,16 +31,19 @@ export default function BodyMap({ onSelect, debug = false, invisible = false }) 
             </g>
 
             <g className="organ-connectors">
-              {ORGANS.map((organ) => (
-                <line
-                  key={organ.id}
-                  x1={organ.anchorX}
-                  y1={organ.anchorY}
-                  x2={organ.touchX}
-                  y2={organ.touchY}
-                  style={{ '--hue': organ.hue }}
-                />
-              ))}
+              {ORGANS.map((organ) => {
+                const point = resolveTouchPoint(organ, calibration)
+                return (
+                  <line
+                    key={organ.id}
+                    x1={organ.anchorX}
+                    y1={organ.anchorY}
+                    x2={point.x}
+                    y2={point.y}
+                    style={{ '--hue': organ.hue }}
+                  />
+                )
+              })}
             </g>
 
             <g className="organ-anchors">
@@ -60,40 +64,45 @@ export default function BodyMap({ onSelect, debug = false, invisible = false }) 
         </>
       )}
 
-      {ORGANS.map((organ, index) => (
-        <button
-          type="button"
-          key={'access-' + organ.id}
-          className={(invisible ? 'sensor-hotspot sensor-access' : 'hotspot access-target') + ' hotspot-' + index}
-          style={{ '--x': organ.touchX + '%', '--y': organ.touchY + '%', '--hue': organ.hue }}
-          onPointerDown={(event) => {
-            event.preventDefault()
-            onSelect(organ.id)
-          }}
-          aria-label={'แตะเพื่อดู ' + organ.name}
-        >
-          {!invisible && (
-            <>
-              <span className="hotspot-ring" />
-              <span className="hotspot-core" />
-              <span className="hotspot-label">
-                <strong>{organ.name}</strong>
-                <small>{organ.en}</small>
-              </span>
-            </>
-          )}
-        </button>
-      ))}
+      {ORGANS.map((organ, index) => {
+        const point = resolveTouchPoint(organ, calibration)
+        return (
+          <button
+            type="button"
+            key={'access-' + organ.id}
+            disabled={disabled}
+            className={(invisible ? 'sensor-hotspot sensor-access' : 'hotspot access-target') + ' hotspot-' + index}
+            style={{ '--x': point.x + '%', '--y': point.y + '%', '--hue': organ.hue }}
+            onPointerDown={(event) => {
+              event.preventDefault()
+              if (!disabled) onSelect(organ.id)
+            }}
+            aria-label={'แตะเพื่อดู ' + organ.name}
+          >
+            {!invisible && (
+              <>
+                <span className="hotspot-ring" />
+                <span className="hotspot-core" />
+                <span className="hotspot-label">
+                  <strong>{organ.name}</strong>
+                  <small>{organ.en}</small>
+                </span>
+              </>
+            )}
+          </button>
+        )
+      })}
 
       {ORGANS.map((organ) => (
         <button
           type="button"
           key={'anatomy-' + organ.id}
+          disabled={disabled}
           className="sensor-hotspot sensor-anatomy"
           style={{ '--x': organ.anchorX + '%', '--y': organ.anchorY + '%', '--hue': organ.hue }}
           onPointerDown={(event) => {
             event.preventDefault()
-            onSelect(organ.id)
+            if (!disabled) onSelect(organ.id)
           }}
           aria-label={'แตะอวัยวะ ' + organ.name}
         />
